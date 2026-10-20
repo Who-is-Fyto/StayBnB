@@ -69,4 +69,12 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Run database seeder on application startup
+await DbInitializer.SeedAsync(app.Services, app.Configuration);
+
+if (args.Contains("--seed-only"))
+{
+    return;
+}
+
 app.Run();
