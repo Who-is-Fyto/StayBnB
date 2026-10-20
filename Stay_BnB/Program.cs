@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stay_BnB.Data;
 using Stay_BnB.Models;
+using Stay_BnB.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 
 // Database configuration (supports SQLite and SQL Server)
 var provider = builder.Configuration["DatabaseProvider"] ?? "Sqlite";

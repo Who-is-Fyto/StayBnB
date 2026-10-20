@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-7 col-lg-6 text-center">
+        <div class="card border-0 shadow-sm p-4 rounded-3">
+            <h1 class="display-6 fw-bold text-danger mb-2">Access Restricted</h1>
+            <p class="lead text-muted mb-3">You do not have permission to view this page with your current role.</p>
+            <div class="alert alert-light border small text-start mb-4">
+                <strong>Staybnb Role Policy:</strong> Users operate strictly under assigned roles (Guest, Host, Admin, SuperAdmin). In this ecosystem, a user is either a Guest or an approved Host, not both simultaneously.
+            </div>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark px-4 me-2">Return Home</a>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-danger px-4">View Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
