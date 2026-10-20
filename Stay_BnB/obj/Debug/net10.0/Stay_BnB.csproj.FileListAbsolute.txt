@@ -257,3 +257,4 @@
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/Stay_BnB.pdb
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/Stay_BnB.genruntimeconfig.cache
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/ref/Stay_BnB.dll
+/home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/Stay_BnB.sourcelink.json
