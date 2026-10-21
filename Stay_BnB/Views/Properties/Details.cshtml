@@ -1,0 +1,348 @@
+@model Stay_BnB.ViewModels.Property.PropertyDetailsViewModel
+@{
+    ViewData["Title"] = Model.Property.Title;
+    var primaryImage = Model.GalleryImages.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+        ?? Model.GalleryImages.FirstOrDefault()?.ImageUrl 
+        ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80";
+    var secondaryImages = Model.GalleryImages.Where(i => i.ImageUrl != primaryImage).Take(4).ToList();
+}
+
+<div class="container-fluid px-0">
+    <!-- Header: Title, Rating, Location, Actions -->
+    <div class="mb-3">
+        <h2 class="fw-bold text-charcoal mb-1">@Model.Property.Title</h2>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3 small text-slate">
+                <span>
+                    <i class="bi bi-star-fill text-warning me-1"></i>
+                    <strong class="text-charcoal">@(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "New")</strong>
+                    @if (Model.ReviewCount > 0)
+                    {
+                        <span class="text-decoration-underline ms-1">(@Model.ReviewCount @(Model.ReviewCount == 1 ? "review" : "reviews"))</span>
+                    }
+                </span>
+                <span>&middot;</span>
+                <span class="fw-semibold text-charcoal">@Model.Property.Address, @Model.Property.City</span>
+            </div>
+
+            <!-- Save & Share Buttons -->
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 d-flex align-items-center gap-1" onclick="copyShareLink()">
+                    <i class="bi bi-share"></i> Share
+                </button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1 @(Model.IsInWishlist ? "btn-accent-pink" : "btn-outline-secondary")" id="detailsWishlistBtn" onclick="toggleDetailsWishlist(@Model.Property.Id)">
+                    <i class="bi bi-heart-fill"></i> @(Model.IsInWishlist ? "Saved" : "Save")
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edge-to-Edge Airbnb-Style Photo Gallery -->
+    <div class="row g-2 mb-4 rounded-4 overflow-hidden" style="max-height: 440px;">
+        <!-- Large Hero Main Image -->
+        <div class="@(secondaryImages.Any() ? "col-md-8" : "col-12") h-100">
+            <div class="position-relative h-100" style="min-height: 380px;">
+                <img src="@primaryImage" alt="@Model.Property.Title" class="w-100 h-100 object-fit-cover rounded-start-4" style="max-height: 440px;" />
+            </div>
+        </div>
+
+        <!-- Secondary Image Grid -->
+        @if (secondaryImages.Any())
+        {
+            <div class="col-md-4 d-none d-md-flex flex-column gap-2 h-100">
+                @foreach (var img in secondaryImages)
+                {
+                    <div class="flex-fill position-relative overflow-hidden" style="max-height: 215px;">
+                        <img src="@img.ImageUrl" alt="Property photo" class="w-100 h-100 object-fit-cover rounded-3" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Main Content & Floating Booking Widget -->
+    <div class="row g-5">
+        <!-- Left Column: Details, Description, Amenities, Check-in, Reviews -->
+        <div class="col-lg-7 col-xl-8">
+            <!-- Host and Specs Summary -->
+            <div class="d-flex justify-content-between align-items-center pb-4 border-bottom border-light-subtle">
+                <div>
+                    <h4 class="fw-bold text-charcoal mb-1">
+                        @Model.Property.PropertyType hosted by @(Model.Property.Host?.FullName ?? "Host")
+                    </h4>
+                    <div class="text-slate small">
+                        Up to @Model.Property.MaxGuests guests &middot; @Model.Property.City &middot; Verified Staybnb Listing
+                    </div>
+                </div>
+                <div class="user-avatar-bubble" style="width: 52px; height: 52px; font-size: 1.25rem;">
+                    @(Model.Property.Host?.FirstName.FirstOrDefault() ?? 'H')
+                </div>
+            </div>
+
+            <!-- Highlights -->
+            <div class="py-4 border-bottom border-light-subtle d-flex flex-column gap-3">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-key-fill fs-4" style="color: var(--primary-blue);"></i>
+                    <div>
+                        <div class="fw-semibold text-charcoal">Self check-in</div>
+                        <div class="small text-slate">Check yourself in with the digital process provided by your host.</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-shield-check fs-4" style="color: var(--accent-pink);"></i>
+                    <div>
+                        <div class="fw-semibold text-charcoal">Verified Quality</div>
+                        <div class="small text-slate">Reviewed and approved by the Staybnb moderation team.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="py-4 border-bottom border-light-subtle">
+                <h5 class="fw-bold text-charcoal mb-3">About this space</h5>
+                <p class="text-charcoal" style="line-height: 1.7; white-space: pre-line;">@Model.Property.Description</p>
+            </div>
+
+            <!-- Amenities Section -->
+            <div class="py-4 border-bottom border-light-subtle">
+                <h5 class="fw-bold text-charcoal mb-3">What this place offers</h5>
+                <div class="row row-cols-1 row-cols-sm-2 g-3">
+                    @foreach (var amenity in Model.Amenities)
+                    {
+                        <div class="col d-flex align-items-center gap-3 text-charcoal">
+                            <i class="@amenity.IconClass fs-5" style="color: var(--primary-blue);"></i>
+                            <span>@amenity.Name</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Check-in Rules Preview -->
+            @if (Model.CheckInProcess != null)
+            {
+                <div class="py-4 border-bottom border-light-subtle">
+                    <h5 class="fw-bold text-charcoal mb-2">Check-in Process</h5>
+                    <p class="text-slate small mb-3">This property utilizes: <strong>@Model.CheckInProcess.Title</strong>.</p>
+                    <div class="p-3 bg-pearl rounded-3 border small text-charcoal">
+                        <i class="bi bi-info-circle me-1" style="color: var(--primary-blue);"></i>
+                        Full digital check-in steps and instructions will become active once your booking request is confirmed.
+                    </div>
+                </div>
+            }
+
+            <!-- Reviews Section -->
+            <div class="py-4 border-bottom border-light-subtle">
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-star-fill text-warning fs-4"></i>
+                    <h5 class="fw-bold text-charcoal mb-0">
+                        @(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "No reviews yet")
+                    </h5>
+                    @if (Model.ReviewCount > 0)
+                    {
+                        <span class="text-slate">&middot; @Model.ReviewCount @(Model.ReviewCount == 1 ? "review" : "reviews")</span>
+                    }
+                </div>
+
+                @if (Model.Reviews.Any())
+                {
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        @foreach (var review in Model.Reviews)
+                        {
+                            <div class="col">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="user-avatar-bubble" style="width: 38px; height: 38px;">
+                                        @(review.Reviewer?.FirstName.FirstOrDefault() ?? 'G')
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-charcoal small">@(review.Reviewer?.FullName ?? "Guest")</div>
+                                        <div class="text-slate" style="font-size: 0.75rem;">@review.CreatedAt.ToString("MMMM yyyy")</div>
+                                    </div>
+                                </div>
+                                <div class="mb-1">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        <i class="bi bi-star-fill @(s <= review.Rating ? "text-warning" : "text-light-subtle")" style="font-size: 0.75rem;"></i>
+                                    }
+                                </div>
+                                <p class="text-charcoal small mb-0">@review.Comment</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-slate small">Be one of the first travelers to review this accommodation after your stay.</p>
+                }
+            </div>
+
+            <!-- Minimalist Map View Placeholder (Custom light palette) -->
+            <div class="py-4">
+                <h5 class="fw-bold text-charcoal mb-3">Where you'll be</h5>
+                <div class="p-4 rounded-4 bg-pearl border position-relative overflow-hidden text-center" style="min-height: 240px; background-color: #F8FAFC;">
+                    <div class="my-4">
+                        <!-- Custom Map Pins: Baby Blue for active, Light Pink for nearby -->
+                        <span class="badge rounded-pill p-2 px-3 shadow-sm d-inline-flex align-items-center gap-2" style="background-color: var(--primary-blue); color: white;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>@Model.Property.Address, @Model.Property.City</span>
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 small text-slate mt-3">
+                        <span><i class="bi bi-geo-alt-fill text-accent-pink me-1" style="color: var(--accent-pink);"></i>Nearby stays</span>
+                        <span><i class="bi bi-geo-alt-fill me-1" style="color: var(--primary-blue);"></i>Selected property</span>
+                    </div>
+                    <p class="text-slate small mt-2 mb-0">Exact map coordinates and directional guidance provided upon booking confirmation.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Floating Sticky Booking Widget -->
+        <div class="col-lg-5 col-xl-4">
+            <div class="booking-floating-card">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <div>
+                        <span class="fs-4 fw-bold text-charcoal">$@Model.Property.PricePerNight.ToString("F0")</span>
+                        <span class="text-slate small"> / night</span>
+                    </div>
+                    <div class="small text-slate">
+                        <i class="bi bi-star-fill text-warning me-1"></i>
+                        <span class="fw-semibold text-charcoal">@(Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "New")</span>
+                    </div>
+                </div>
+
+                <!-- Booking Input Form -->
+                <form id="bookingCalculatorForm">
+                    <input type="hidden" id="pricePerNight" value="@Model.Property.PricePerNight" />
+                    <input type="hidden" id="cleaningFee" value="@Model.Property.CleaningFee" />
+                    <input type="hidden" id="serviceFee" value="@Model.Property.ServiceFee" />
+
+                    <div class="border rounded-3 p-2 mb-3 bg-white">
+                        <div class="row g-0">
+                            <div class="col-6 pe-1 border-end">
+                                <label class="small text-slate fw-bold" style="font-size: 0.7rem;">CHECK-IN</label>
+                                <input type="date" id="checkInDate" class="form-control form-control-sm border-0 p-0 text-charcoal" required />
+                            </div>
+                            <div class="col-6 ps-2">
+                                <label class="small text-slate fw-bold" style="font-size: 0.7rem;">CHECKOUT</label>
+                                <input type="date" id="checkOutDate" class="form-control form-control-sm border-0 p-0 text-charcoal" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-3 p-2 mb-3 bg-white">
+                        <label class="small text-slate fw-bold" style="font-size: 0.7rem;">GUESTS</label>
+                        <select id="guestCount" class="form-select form-select-sm border-0 p-0 text-charcoal">
+                            @for (int g = 1; g <= Model.Property.MaxGuests; g++)
+                            {
+                                <option value="@g">@g @(g == 1 ? "guest" : "guests")</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Full-Width Baby Blue Reserve Button -->
+                    <div class="d-grid mb-3">
+                        <button type="button" class="btn btn-primary-baby btn-lg py-2 fw-semibold" onclick="handleReserveClick(@Model.Property.Id)">
+                            Reserve
+                        </button>
+                    </div>
+
+                    <div class="text-center small text-slate mb-3">You won't be charged yet</div>
+
+                    <!-- Transparent Pricing Calculation Breakdown -->
+                    <div id="priceBreakdown" class="d-flex flex-column gap-2 small border-top pt-3">
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span id="nightCalculationLabel">$@Model.Property.PricePerNight.ToString("F0") x 3 nights</span>
+                            <span id="subtotalPrice" class="fw-semibold">$@(Model.Property.PricePerNight * 3)</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Cleaning fee</span>
+                            <span class="fw-semibold">$@Model.Property.CleaningFee.ToString("F0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Staybnb service fee</span>
+                            <span class="fw-semibold">$@Model.Property.ServiceFee.ToString("F0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal border-top pt-2 mt-1 fs-6">
+                            <strong>Total before taxes</strong>
+                            <strong id="totalPriceCalculation" class="text-charcoal">$@((Model.Property.PricePerNight * 3) + Model.Property.CleaningFee + Model.Property.ServiceFee)</strong>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Set default dates: check-in tomorrow, check-out in 4 days
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const inFourDays = new Date(today);
+            inFourDays.setDate(inFourDays.getDate() + 4);
+
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+
+            checkInInput.min = tomorrow.toISOString().split('T')[0];
+            checkInInput.value = tomorrow.toISOString().split('T')[0];
+
+            checkOutInput.min = inFourDays.toISOString().split('T')[0];
+            checkOutInput.value = inFourDays.toISOString().split('T')[0];
+
+            checkInInput.addEventListener('change', updatePriceCalculation);
+            checkOutInput.addEventListener('change', updatePriceCalculation);
+            updatePriceCalculation();
+        });
+
+        // Calculate TotalPrice = (PricePerNight x Nights) + CleaningFee + ServiceFee
+        function updatePriceCalculation() {
+            const checkInVal = document.getElementById('checkInDate').value;
+            const checkOutVal = document.getElementById('checkOutDate').value;
+            const pricePerNight = parseFloat(document.getElementById('pricePerNight').value) || 0;
+            const cleaningFee = parseFloat(document.getElementById('cleaningFee').value) || 0;
+            const serviceFee = parseFloat(document.getElementById('serviceFee').value) || 0;
+
+            if (checkInVal && checkOutVal) {
+                const start = new Date(checkInVal);
+                const end = new Date(checkOutVal);
+                const diffTime = end - start;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                const nights = diffDays > 0 ? diffDays : 1;
+                const subtotal = pricePerNight * nights;
+                const total = subtotal + cleaningFee + serviceFee;
+
+                document.getElementById('nightCalculationLabel').innerText = `$${pricePerNight.toFixed(0)} x ${nights} nights`;
+                document.getElementById('subtotalPrice').innerText = `$${subtotal.toFixed(0)}`;
+                document.getElementById('totalPriceCalculation').innerText = `$${total.toFixed(0)}`;
+            }
+        }
+
+        function handleReserveClick(propertyId) {
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+            const guests = document.getElementById('guestCount').value;
+
+            // Redirect to booking workflow (Phase 11)
+            window.location.href = `/Booking/Create?propertyId=${propertyId}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
+        }
+
+        function toggleDetailsWishlist(propertyId) {
+            const btn = document.getElementById('detailsWishlistBtn');
+            btn.classList.toggle('btn-accent-pink');
+            btn.classList.toggle('btn-outline-secondary');
+            if (btn.classList.contains('btn-accent-pink')) {
+                btn.innerHTML = '<i class="bi bi-heart-fill"></i> Saved';
+            } else {
+                btn.innerHTML = '<i class="bi bi-heart-fill"></i> Save';
+            }
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Listing link copied to clipboard!");
+        }
+    </script>
+}

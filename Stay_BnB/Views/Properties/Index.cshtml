@@ -1,0 +1,148 @@
+@model Stay_BnB.ViewModels.Property.PropertyFilterViewModel
+@{
+    ViewData["Title"] = "Explore Properties";
+}
+
+<div class="row g-4">
+    <!-- Filter Sidebar (Pearl Background) -->
+    <div class="col-lg-3">
+        <div class="p-3 rounded-4 bg-pearl border border-light-subtle shadow-sm">
+            <h5 class="fw-bold mb-3 text-charcoal d-flex align-items-center justify-content-between">
+                <span>Filters</span>
+                <a asp-action="Index" class="small text-slate text-decoration-none fw-normal">Reset All</a>
+            </h5>
+
+            <form asp-action="Index" method="get">
+                <!-- Destination Filter -->
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-slate">Destination / City</label>
+                    <input type="text" name="city" value="@Model.City" class="form-control form-control-sm" placeholder="e.g. Cape Town, Stellenbosch" />
+                </div>
+
+                <!-- Property Type Filter -->
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-slate">Property Type</label>
+                    <select name="propertyType" class="form-select form-select-sm">
+                        <option value="">All Types</option>
+                        @foreach (var type in Model.AvailablePropertyTypes)
+                        {
+                            <option value="@type" selected="@(type.Equals(Model.PropertyType, StringComparison.OrdinalIgnoreCase))">@type</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-slate">Price Range (per night)</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" name="minPrice" value="@Model.MinPrice" class="form-control form-control-sm" placeholder="Min $" min="0" />
+                        <span class="text-muted">-</span>
+                        <input type="number" name="maxPrice" value="@Model.MaxPrice" class="form-control form-control-sm" placeholder="Max $" min="0" />
+                    </div>
+                </div>
+
+                <!-- Guest Capacity Filter -->
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-slate">Minimum Guests</label>
+                    <input type="number" name="guests" value="@Model.Guests" class="form-control form-control-sm" placeholder="e.g. 2" min="1" max="20" />
+                </div>
+
+                <!-- Amenities Filter -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-slate mb-2">Amenities</label>
+                    <div class="d-flex flex-column gap-2" style="max-height: 200px; overflow-y: auto;">
+                        @foreach (var amenity in Model.AvailableAmenities)
+                        {
+                            var isChecked = Model.SelectedAmenityIds.Contains(amenity.Id);
+                            <div class="form-check small">
+                                <input class="form-check-input" type="checkbox" name="amenityIds" value="@amenity.Id" id="amenity_@amenity.Id" @(isChecked ? "checked" : "") />
+                                <label class="form-check-label text-charcoal" for="amenity_@amenity.Id">
+                                    <i class="@amenity.IconClass me-1 text-slate"></i>@amenity.Name
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary-baby py-2">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Properties Results Grid -->
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-0 text-charcoal">Available Accommodations</h4>
+                <p class="text-slate small mb-0">Showing @Model.TotalCount @(Model.TotalCount == 1 ? "stay" : "stays")</p>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.City))
+            {
+                <span class="badge badge-blue px-3 py-2">In "@Model.City"</span>
+            }
+        </div>
+
+        @if (Model.Properties.Any())
+        {
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                @foreach (var property in Model.Properties)
+                {
+                    var coverImage = property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                        ?? property.Images.FirstOrDefault()?.ImageUrl 
+                        ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+
+                    var ratingAvg = property.Reviews.Any() ? property.Reviews.Average(r => r.Rating).ToString("0.0") : "New";
+
+                    <div class="col">
+                        <div class="property-card position-relative">
+                            <!-- Wishlist Heart Button -->
+                            <button type="button" class="btn-wishlist-heart" onclick="toggleWishlist(this, @property.Id)" title="Save to favorites">
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+
+                            <a asp-action="Details" asp-route-id="@property.Id" class="text-decoration-none text-reset">
+                                <div class="property-card-image-wrapper">
+                                    <img src="@coverImage" alt="@property.Title" class="property-card-image" loading="lazy" />
+                                </div>
+                                <div class="property-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <span class="property-location text-truncate" style="max-width: 80%;">@property.City, South Africa</span>
+                                        <span class="small fw-semibold text-charcoal">
+                                            <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.75rem;"></i>@ratingAvg
+                                        </span>
+                                    </div>
+                                    <div class="property-subtitle text-truncate">@property.Title</div>
+                                    <div class="property-subtitle text-slate small">@property.PropertyType &middot; Up to @property.MaxGuests guests</div>
+                                    <div class="property-price">
+                                        <strong>$@property.PricePerNight.ToString("F0")</strong> <span class="text-slate small">night</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 my-4 bg-pearl rounded-4 border">
+                <i class="bi bi-house-exclamation text-slate" style="font-size: 3rem; color: var(--primary-blue) !important;"></i>
+                <h5 class="fw-bold mt-3 text-charcoal">No listings match your criteria</h5>
+                <p class="text-slate small mb-3">Try widening your price range or clearing amenity filters.</p>
+                <a asp-action="Index" class="btn btn-primary-baby px-4">Clear All Filters</a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleWishlist(btn, propertyId) {
+            btn.classList.toggle('active');
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => { btn.style.transform = ''; }, 200);
+        }
+    </script>
+}
