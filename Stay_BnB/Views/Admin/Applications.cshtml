@@ -1,0 +1,129 @@
+@model IEnumerable<Stay_BnB.Models.HostApplication>
+@{
+    ViewData["Title"] = "Host Applications Moderation";
+    var currentFilter = ViewBag.CurrentFilter as string ?? "All";
+}
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-charcoal mb-0">Host & Property Applications</h3>
+            <span class="text-slate small">Review and approve applications to upgrade guests to hosts</span>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Command Center
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Status Filter Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2">
+        <li class="nav-item">
+            <a asp-action="Applications" class="nav-link rounded-pill px-4 @(currentFilter == "All" ? "active bg-dark" : "text-slate bg-light")">All</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="Applications" asp-route-status="Pending" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Pending", StringComparison.OrdinalIgnoreCase) ? "active bg-warning text-dark" : "text-slate bg-light")">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="Applications" asp-route-status="Approved" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Approved", StringComparison.OrdinalIgnoreCase) ? "active bg-success" : "text-slate bg-light")">Approved</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="Applications" asp-route-status="Rejected" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ? "active bg-danger" : "text-slate bg-light")">Rejected</a>
+        </li>
+    </ul>
+
+    <!-- Applications Table -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-slate">
+                    <tr>
+                        <th>#</th>
+                        <th>Applicant</th>
+                        <th>Property</th>
+                        <th>Type & Capacity</th>
+                        <th>Nightly Price</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var app in Model)
+                        {
+                            var coverImg = app.Property?.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                                ?? app.Property?.Images.FirstOrDefault()?.ImageUrl 
+                                ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80";
+
+                            <tr>
+                                <td class="fw-bold text-slate small">@app.Id</td>
+                                <td>
+                                    <div class="fw-semibold text-charcoal small">@(app.ApplicationUser?.FullName ?? "Unknown User")</div>
+                                    <div class="text-slate" style="font-size: 0.75rem;">@app.ApplicationUser?.Email</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="@coverImg" alt="Thumbnail" class="rounded-2 object-fit-cover" style="width: 48px; height: 36px;" />
+                                        <div>
+                                            <div class="fw-semibold text-charcoal small text-truncate" style="max-width: 220px;">
+                                                @(app.Property?.Title ?? "Property")
+                                            </div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@app.Property?.City</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="small text-slate">
+                                    @app.Property?.PropertyType (Max @app.Property?.MaxGuests)
+                                </td>
+                                <td class="small fw-bold text-charcoal">
+                                    $@app.Property?.PricePerNight.ToString("F0")
+                                </td>
+                                <td class="small text-slate">
+                                    @app.AppliedAt.ToString("MMM dd, yyyy")
+                                </td>
+                                <td>
+                                    @if (app.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending)
+                                    {
+                                        <span class="badge bg-warning text-dark px-2 py-1">Pending</span>
+                                    }
+                                    else if (app.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved)
+                                    {
+                                        <span class="badge bg-success px-2 py-1">Approved</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-2 py-1">Rejected</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Review" asp-route-id="@app.Id" class="btn btn-sm btn-outline-secondary py-1 px-3">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-slate small">
+                                No applications match the selected status filter.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

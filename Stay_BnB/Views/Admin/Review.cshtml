@@ -1,0 +1,242 @@
+@model Stay_BnB.ViewModels.Admin.ApplicationReviewViewModel
+@{
+    ViewData["Title"] = $"Review Application #{Model.Application.Id}";
+}
+
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-dark">Application #@Model.Application.Id</span>
+                @if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending)
+                {
+                    <span class="badge bg-warning text-dark px-3 py-1">Pending Review</span>
+                }
+                else if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved)
+                {
+                    <span class="badge bg-success px-3 py-1">Approved</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger px-3 py-1">Rejected</span>
+                }
+            </div>
+            <h3 class="fw-bold text-charcoal mb-0">@Model.Property.Title</h3>
+            <span class="text-slate small">Submitted by @Model.Applicant.FullName on @Model.Application.AppliedAt.ToString("MMMM dd, yyyy HH:mm")</span>
+        </div>
+        <div>
+            <a asp-action="Applications" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Applications
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Property Inspection Details & Photos -->
+        <div class="col-lg-8">
+            <!-- Property Photos Section -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+                <div class="p-3 bg-pearl border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-charcoal mb-0">Uploaded Photos (@Model.Property.Images.Count)</h6>
+                    <span class="text-slate small">Mandatory requirement verified</span>
+                </div>
+                <div class="card-body p-3">
+                    @if (Model.Property.Images.Any())
+                    {
+                        <div class="row row-cols-2 row-cols-md-3 g-2">
+                            @foreach (var img in Model.Property.Images)
+                            {
+                                <div class="col position-relative">
+                                    <img src="@img.ImageUrl" alt="Property photo" class="w-100 rounded-3 object-fit-cover border" style="height: 160px;" />
+                                    @if (img.IsCover)
+                                    {
+                                        <span class="badge bg-dark position-absolute top-0 start-0 m-2">Cover Photo</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger mb-0 small">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Warning: No images attached to this listing.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Property Details & Specs -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+                <div class="p-3 bg-pearl border-bottom">
+                    <h6 class="fw-bold text-charcoal mb-0">Listing Details & Location</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="small text-slate fw-semibold">Street Address</div>
+                            <div class="text-charcoal">@Model.Property.Address</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="small text-slate fw-semibold">City / Destination</div>
+                            <div class="text-charcoal">@Model.Property.City</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-slate fw-semibold">Property Type</div>
+                            <div class="text-charcoal">@Model.Property.PropertyType</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-slate fw-semibold">Max Guests</div>
+                            <div class="text-charcoal">@Model.Property.MaxGuests guests</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-slate fw-semibold">Nightly Rate</div>
+                            <div class="fw-bold text-charcoal fs-5">$@Model.Property.PricePerNight.ToString("F2")</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="small text-slate fw-semibold mb-1">Description</div>
+                        <p class="text-charcoal small bg-light p-3 rounded-3 mb-0" style="white-space: pre-line;">@Model.Property.Description</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="small text-slate fw-semibold">Cleaning Fee</div>
+                            <div class="text-charcoal">$@Model.Property.CleaningFee.ToString("F2")</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="small text-slate fw-semibold">Service Fee</div>
+                            <div class="text-charcoal">$@Model.Property.ServiceFee.ToString("F2")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities & Check-in Rules -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="p-3 bg-pearl border-bottom">
+                    <h6 class="fw-bold text-charcoal mb-0">Amenities & Proposed Check-in Process</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="small text-slate fw-semibold mb-2">Amenities Included</div>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        @if (Model.Property.Amenities.Any())
+                        {
+                            @foreach (var a in Model.Property.Amenities)
+                            {
+                                <span class="badge badge-blue px-3 py-2">
+                                    <i class="@a.IconClass me-1"></i>@a.Name
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-slate small">No specific amenities selected.</span>
+                        }
+                    </div>
+
+                    <div class="small text-slate fw-semibold mb-1">Check-in Configuration</div>
+                    @if (Model.Property.CheckInProcess != null)
+                    {
+                        <div class="p-3 bg-light rounded-3 border small">
+                            <div class="fw-bold text-charcoal mb-1">@Model.Property.CheckInProcess.Title</div>
+                            <div class="text-slate">@Model.Property.CheckInProcess.StepsJson</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-slate small">Standard default check-in.</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Applicant Info & Decision Controls -->
+        <div class="col-lg-4">
+            <!-- Applicant Overview -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+                <div class="p-3 bg-pearl border-bottom">
+                    <h6 class="fw-bold text-charcoal mb-0">Applicant Information</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="user-avatar-bubble" style="width: 48px; height: 48px; font-size: 1.15rem;">
+                            @(string.IsNullOrEmpty(Model.Applicant.FirstName) ? "U" : Model.Applicant.FirstName.Substring(0, 1))
+                        </div>
+                        <div>
+                            <div class="fw-bold text-charcoal">@Model.Applicant.FullName</div>
+                            <div class="text-slate small">@Model.Applicant.Email</div>
+                        </div>
+                    </div>
+                    <div class="small text-slate mb-2">
+                        <strong>Member Since:</strong> @Model.Applicant.CreatedAt.ToString("MMMM dd, yyyy")
+                    </div>
+                    <div class="small text-slate">
+                        <strong>Current Status:</strong> <span class="badge bg-secondary">Guest</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Controls Card -->
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="p-3 bg-pearl border-bottom">
+                    <h6 class="fw-bold text-charcoal mb-0">Administrative Decision</h6>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Policy Warning -->
+                    <div class="p-3 bg-light rounded-3 border small mb-4 text-charcoal">
+                        <i class="bi bi-info-circle-fill me-1" style="color: var(--primary-blue);"></i>
+                        <strong>Automatic Role Evolution:</strong> Approving this application will programmatically assign the <strong>Host</strong> role to @Model.Applicant.FirstName and remove their <strong>Guest</strong> role (mutual exclusivity). The property listing will be published live.
+                    </div>
+
+                    @if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending)
+                    {
+                        <!-- Approve Form -->
+                        <form asp-action="Approve" asp-route-id="@Model.Application.Id" method="post" class="mb-4">
+                            @Html.AntiForgeryToken()
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg py-2 fw-semibold" onclick="return confirm('Approve this application and promote user to Host?');">
+                                    <i class="bi bi-check-circle me-1"></i>Approve & Promote to Host
+                                </button>
+                            </div>
+                        </form>
+
+                        <hr />
+
+                        <!-- Reject Form -->
+                        <form asp-action="Reject" asp-route-id="@Model.Application.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label asp-for="RejectionReason" class="form-label small fw-semibold text-charcoal">Rejection Reason (Sent to applicant)</label>
+                                <textarea name="rejectionReason" rows="3" class="form-control form-control-sm" placeholder="Provide actionable feedback explaining why the listing was rejected..." required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-danger py-2 fw-semibold" onclick="return confirm('Are you sure you want to decline this application?');">
+                                    <i class="bi bi-x-circle me-1"></i>Decline Application
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved)
+                    {
+                        <div class="alert alert-success mb-0 text-center">
+                            <i class="bi bi-check-circle fs-3 d-block mb-1"></i>
+                            <strong>Approved & Active</strong>
+                            <div class="small mt-1">Reviewed on @Model.Application.ReviewedAt?.ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <i class="bi bi-x-circle fs-4 d-block mb-1"></i>
+                            <strong>Declined</strong>
+                            <div class="small mt-1">Reason: @Model.Application.RejectionReason</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

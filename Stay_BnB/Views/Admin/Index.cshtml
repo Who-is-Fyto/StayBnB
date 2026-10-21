@@ -1,0 +1,172 @@
+@model Stay_BnB.ViewModels.Admin.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Command Center";
+}
+
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-charcoal mb-0">Admin Command Center</h3>
+            <span class="text-slate small">System oversight, application moderation, and security auditing</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Applications" class="btn btn-primary-baby">
+                <i class="bi bi-file-earmark-text me-1"></i>View All Applications
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Key Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-slate fw-semibold text-uppercase">Pending Reviews</span>
+                    <span class="badge bg-warning text-dark px-2 py-1">Needs Action</span>
+                </div>
+                <div class="fs-2 fw-bold text-charcoal">@Model.PendingApplicationsCount</div>
+                <div class="small text-slate mt-1">Host applications awaiting review</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-slate fw-semibold text-uppercase">Active Listings</span>
+                    <i class="bi bi-houses fs-5" style="color: var(--primary-blue);"></i>
+                </div>
+                <div class="fs-2 fw-bold text-charcoal">@Model.ActiveListingsCount</div>
+                <div class="small text-slate mt-1">Properties live in marketplace</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-slate fw-semibold text-uppercase">Total Properties</span>
+                    <i class="bi bi-building fs-5 text-slate"></i>
+                </div>
+                <div class="fs-2 fw-bold text-charcoal">@Model.TotalPropertiesCount</div>
+                <div class="small text-slate mt-1">Total submitted listings</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-slate fw-semibold text-uppercase">Registered Users</span>
+                    <i class="bi bi-people fs-5" style="color: var(--accent-pink);"></i>
+                </div>
+                <div class="fs-2 fw-bold text-charcoal">@Model.TotalUsersCount</div>
+                <div class="small text-slate mt-1">Guests, Hosts, and Staff</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Pending Applications Queue Table -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="p-3 bg-pearl border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-charcoal mb-0">Pending Application Review Queue</h5>
+                    <a asp-action="Applications" asp-route-status="Pending" class="small text-decoration-none fw-semibold" style="color: var(--primary-blue);">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-slate">
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Property</th>
+                                <th>Location</th>
+                                <th>Price</th>
+                                <th>Submitted</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.PendingApplications.Any())
+                            {
+                                @foreach (var app in Model.PendingApplications)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-charcoal small">@(app.ApplicationUser?.FullName ?? "Applicant")</div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@app.ApplicationUser?.Email</div>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate fw-semibold text-charcoal small" style="max-width: 180px;">
+                                                @(app.Property?.Title ?? "Property Listing")
+                                            </div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@app.Property?.PropertyType</div>
+                                        </td>
+                                        <td class="small text-charcoal">@app.Property?.City</td>
+                                        <td class="small fw-bold text-charcoal">$@app.Property?.PricePerNight.ToString("F0")</td>
+                                        <td class="small text-slate">@app.AppliedAt.ToString("MMM dd, yyyy")</td>
+                                        <td class="text-end">
+                                            <a asp-action="Review" asp-route-id="@app.Id" class="btn btn-sm btn-primary-baby py-1 px-3">
+                                                Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-slate small">
+                                        <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                                        All host applications have been reviewed. No pending items in queue.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Audit Activity Log -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="p-3 bg-pearl border-bottom">
+                    <h5 class="fw-bold text-charcoal mb-0">Recent System Audit Log</h5>
+                </div>
+                <div class="p-3 d-flex flex-column gap-3" style="max-height: 480px; overflow-y: auto;">
+                    @if (Model.RecentActivities.Any())
+                    {
+                        @foreach (var log in Model.RecentActivities)
+                        {
+                            <div class="p-2 border rounded-3 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge @(log.ActivityType == Stay_BnB.Models.Enums.ActivityType.RoleChange ? "badge-pink" : log.ActivityType == Stay_BnB.Models.Enums.ActivityType.SecurityEvent ? "bg-danger" : "badge-blue") small" style="font-size: 0.7rem;">
+                                        @log.ActivityType
+                                    </span>
+                                    <span class="text-slate" style="font-size: 0.7rem;">@log.CreatedAt.ToString("MMM dd, HH:mm")</span>
+                                </div>
+                                <div class="fw-semibold text-charcoal small">@log.Action</div>
+                                @if (!string.IsNullOrEmpty(log.Details))
+                                {
+                                    <div class="text-slate" style="font-size: 0.75rem;">@log.Details</div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-slate small py-3">No activity logs recorded yet.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -75,7 +75,8 @@
                     {
                         <!-- Admin Navigation Links -->
                         <span class="badge bg-dark px-2 py-1 small me-1">@(isSuperAdmin ? "SuperAdmin" : "Admin")</span>
-                        <a href="#admin-portal" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Applications</a>
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Command Center</a>
+                        <a asp-controller="Admin" asp-action="Applications" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Applications</a>
                         @if (isSuperAdmin)
                         {
                             <a href="#superadmin-users" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Users</a>
@@ -101,7 +102,7 @@
                         <button class="btn btn-light border rounded-pill py-1 px-2 d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-list text-slate"></i>
                             <div class="user-avatar-bubble">
-                                @(currentUser?.FirstName.FirstOrDefault() ?? 'U')
+                                @(string.IsNullOrEmpty(currentUser?.FirstName) ? "U" : currentUser.FirstName.Substring(0, 1))
                             </div>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2">
@@ -124,7 +125,8 @@
                             }
                             else if (isAdmin || isSuperAdmin)
                             {
-                                <li><a class="dropdown-item py-2" href="#admin-portal"><i class="bi bi-shield-check me-2"></i>Admin Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="Admin" asp-action="Index"><i class="bi bi-shield-check me-2"></i>Admin Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="Admin" asp-action="Applications"><i class="bi bi-file-earmark-text me-2"></i>Applications</a></li>
                             }
                             <li><hr class="dropdown-divider"></li>
                             <li>
