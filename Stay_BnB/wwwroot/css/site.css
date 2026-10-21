@@ -1,31 +1,366 @@
-html {
-  font-size: 14px;
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
+:root {
+    --primary-blue: #38BDF8;
+    --primary-blue-hover: #0EA5E9;
+    --primary-blue-light: #E0F2FE;
+    --accent-pink: #F472B6;
+    --accent-pink-hover: #EC4899;
+    --accent-pink-light: #FCE7F3;
+    --bg-white: #FFFFFF;
+    --bg-pearl: #F8FAFC;
+    --border-subtle: #E2E8F0;
+    --text-charcoal: #1E293B;
+    --text-slate: #64748B;
+    --text-muted: #94A3B8;
+    --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --shadow-hover: 0 14px 30px -4px rgba(56, 189, 248, 0.15), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+    --radius-card: 16px;
+    --radius-btn: 12px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/* Global typography */
 body {
-  margin-bottom: 60px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-charcoal);
+    background-color: var(--bg-white);
+    margin: 0;
+    padding-bottom: 70px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+h1, h2, h3, h4, h5, h6, .brand-font {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-charcoal);
+    letter-spacing: -0.02em;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Sticky Navigation Bar */
+.staybnb-navbar {
+    background-color: var(--bg-white);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.75rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 1px 4px 0 rgba(15, 23, 42, 0.03);
+}
+
+.navbar-brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: transform 200ms ease;
+}
+
+.navbar-brand-logo:hover {
+    color: var(--primary-blue-hover);
+    transform: scale(0.99);
+}
+
+/* Central Search Pill */
+.search-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-subtle);
+    border-radius: 9999px;
+    padding: 0.35rem 0.6rem 0.35rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    transition: all 200ms ease-in-out;
+}
+
+.search-pill:hover, .search-pill:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.16);
+}
+
+.search-pill .search-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-subtle);
+    margin: 0 0.75rem;
+}
+
+.search-pill input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: var(--text-charcoal);
+}
+
+.search-pill input::placeholder {
+    color: var(--text-slate);
+}
+
+.search-btn-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--primary-blue);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 200ms ease;
+}
+
+.search-btn-circle:hover {
+    background-color: var(--primary-blue-hover);
+    transform: scale(1.05);
+}
+
+.search-btn-circle:active {
+    transform: scale(0.95);
+}
+
+/* Primary Baby Blue Button */
+.btn-primary-baby {
+    background-color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--radius-btn);
+    padding: 0.55rem 1.25rem;
+    transition: all 200ms ease-in-out;
+}
+
+.btn-primary-baby:hover {
+    background-color: var(--primary-blue-hover);
+    border-color: var(--primary-blue-hover);
+    color: white;
+}
+
+.btn-primary-baby:active {
+    transform: scale(0.98);
+}
+
+/* Secondary Light Pink Accent */
+.btn-accent-pink {
+    background-color: var(--accent-pink);
+    border: 1px solid var(--accent-pink);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--radius-btn);
+    padding: 0.55rem 1.25rem;
+    transition: all 200ms ease-in-out;
+}
+
+.btn-accent-pink:hover {
+    background-color: var(--accent-pink-hover);
+    border-color: var(--accent-pink-hover);
+    color: white;
+}
+
+.btn-accent-pink:active {
+    transform: scale(0.98);
+}
+
+.btn-outline-baby {
+    border: 1px solid var(--primary-blue);
+    color: var(--primary-blue);
+    font-weight: 600;
+    border-radius: var(--radius-btn);
+    background: transparent;
+    transition: all 200ms ease-in-out;
+}
+
+.btn-outline-baby:hover {
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue-hover);
+}
+
+/* Badges */
+.badge-pink {
+    background-color: var(--accent-pink);
+    color: white;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-blue {
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue-hover);
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+/* Property Cards (The 70% Image Grid) */
+.property-card {
+    background-color: var(--bg-white);
+    border: 1px solid transparent;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    transition: transform 200ms ease-in-out, box-shadow 200ms ease-in-out;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    color: inherit;
+}
+
+.property-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 70%; /* 70% aspect ratio */
+    overflow: hidden;
+    background-color: var(--bg-pearl);
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.property-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 300ms ease-in-out;
+}
+
+.property-card:hover .property-card-image {
+    transform: scale(1.05);
+}
+
+/* Frosted-glass Wishlist Heart Button */
+.btn-wishlist-heart {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-slate);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 200ms ease-in-out;
+}
+
+.btn-wishlist-heart:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--accent-pink);
+}
+
+.btn-wishlist-heart.active {
+    color: var(--accent-pink);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.btn-wishlist-heart:active {
+    transform: scale(0.92);
+}
+
+/* Property Card Body */
+.property-card-body {
+    padding: 0.9rem 0.2rem 0.5rem 0.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.property-location {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-charcoal);
+}
+
+.property-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-slate);
+}
+
+.property-price {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    color: var(--text-charcoal);
+}
+
+.property-price strong {
+    font-weight: 700;
+}
+
+/* Booking Floating Widget */
+.booking-floating-card {
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    position: sticky;
+    top: 90px;
+}
+
+/* Secondary sections & Pearl background */
+.bg-pearl {
+    background-color: var(--bg-pearl) !important;
+}
+
+.staybnb-footer {
+    background-color: var(--bg-pearl);
+    border-top: 1px solid var(--border-subtle);
+    color: var(--text-slate);
+    padding: 2.5rem 0 1.5rem 0;
+    margin-top: 4rem;
+}
+
+/* Skeleton Loaders (Baby Blue Tint Pulse) */
+.skeleton-box {
+    background: linear-gradient(90deg, #F1F5F9 25%, #E0F2FE 50%, #F1F5F9 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton-pulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Forms & inputs */
+.form-control, .form-select {
+    border-radius: var(--radius-btn);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-charcoal);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.95rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.2);
+}
+
+/* User Avatar Bubble */
+.user-avatar-bubble {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue-hover);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
 }

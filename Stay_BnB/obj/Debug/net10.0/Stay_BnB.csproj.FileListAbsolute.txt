@@ -182,7 +182,6 @@
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/scopedcss/bundle/Stay_BnB.styles.css
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/scopedcss/projectbundle/Stay_BnB.bundle.scp.css
-/home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/compressed/yxq38qnx3m-{0}-lugek5hnai-lugek5hnai.gz
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/compressed/g5ybkawu6t-{0}-61n19gt1b8-61n19gt1b8.gz
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/compressed/i43lumihm3-{0}-fr7q2aak1r-fr7q2aak1r.gz
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/compressed/jeh4vzdg55-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -258,3 +257,4 @@
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/Stay_BnB.genruntimeconfig.cache
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/ref/Stay_BnB.dll
 /home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/Stay_BnB.sourcelink.json
+/home/michael/Documents/StayBnB/Stay_BnB/obj/Debug/net10.0/compressed/yxq38qnx3m-{0}-d3h8ggz3o3-d3h8ggz3o3.gz

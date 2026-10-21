@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Stay_BnB")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ffd6624b98615fab1417595bf86fe006316401a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2df7f6cedfaa55b6c4c427c3d772a31f2739e90a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Stay_BnB")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Stay_BnB")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

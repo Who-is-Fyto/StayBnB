@@ -1,8 +1,100 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model IEnumerable<Stay_BnB.Models.HostProperty>
+@{
+    ViewData["Title"] = "Vacation Homes & Experiences";
+    var currentType = Context.Request.Query["propertyType"].ToString();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Category Filter Pills Bar -->
+<div class="d-flex align-items-center gap-3 overflow-auto pb-3 mb-4 border-bottom border-light" style="scrollbar-width: none;">
+    <a asp-action="Index" class="btn btn-sm rounded-pill px-3 py-2 text-decoration-none d-flex align-items-center gap-2 @(string.IsNullOrEmpty(currentType) ? "btn-dark" : "btn-light text-slate")">
+        <i class="bi bi-grid-fill"></i>
+        <span>All Homes</span>
+    </a>
+    <a asp-action="Index" asp-route-propertyType="Villa" class="btn btn-sm rounded-pill px-3 py-2 text-decoration-none d-flex align-items-center gap-2 @(currentType.Equals("Villa", StringComparison.OrdinalIgnoreCase) ? "btn-dark" : "btn-light text-slate")">
+        <i class="bi bi-water"></i>
+        <span>Villas</span>
+    </a>
+    <a asp-action="Index" asp-route-propertyType="Apartment" class="btn btn-sm rounded-pill px-3 py-2 text-decoration-none d-flex align-items-center gap-2 @(currentType.Equals("Apartment", StringComparison.OrdinalIgnoreCase) ? "btn-dark" : "btn-light text-slate")">
+        <i class="bi bi-building"></i>
+        <span>Apartments</span>
+    </a>
+    <a asp-action="Index" asp-route-propertyType="Cabin" class="btn btn-sm rounded-pill px-3 py-2 text-decoration-none d-flex align-items-center gap-2 @(currentType.Equals("Cabin", StringComparison.OrdinalIgnoreCase) ? "btn-dark" : "btn-light text-slate")">
+        <i class="bi bi-tree"></i>
+        <span>Cabins</span>
+    </a>
+    <a asp-action="Index" asp-route-propertyType="House" class="btn btn-sm rounded-pill px-3 py-2 text-decoration-none d-flex align-items-center gap-2 @(currentType.Equals("House", StringComparison.OrdinalIgnoreCase) ? "btn-dark" : "btn-light text-slate")">
+        <i class="bi bi-house-door"></i>
+        <span>Houses</span>
+    </a>
 </div>
+
+<!-- Property Cards Grid (70% Image, Charcoal & Slate text, Frosted-glass Pink Heart) -->
+@if (Model != null && Model.Any())
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var property in Model)
+        {
+            var coverImage = property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                ?? property.Images.FirstOrDefault()?.ImageUrl 
+                ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+
+            var ratingAvg = property.Reviews.Any() ? property.Reviews.Average(r => r.Rating).ToString("0.0") : "New";
+
+            <div class="col">
+                <div class="property-card position-relative">
+                    <!-- Frosted-glass Wishlist Heart Button (Fills with Light Pink #F472B6) -->
+                    <button type="button" class="btn-wishlist-heart" onclick="toggleWishlist(this, @property.Id)" title="Save to favorites">
+                        <i class="bi bi-heart-fill"></i>
+                    </button>
+
+                    <!-- Property Card Link -->
+                    <a asp-controller="Properties" asp-action="Details" asp-route-id="@property.Id" class="text-decoration-none text-reset">
+                        <!-- Image Container (70% aspect ratio with zoom on card hover) -->
+                        <div class="property-card-image-wrapper">
+                            <img src="@coverImage" alt="@property.Title" class="property-card-image" loading="lazy" />
+                        </div>
+
+                        <!-- Card Body with Tight Typography -->
+                        <div class="property-card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="property-location text-truncate" style="max-width: 80%;">@property.City, South Africa</span>
+                                <span class="small fw-semibold text-charcoal">
+                                    <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.75rem;"></i>@ratingAvg
+                                </span>
+                            </div>
+                            <div class="property-subtitle text-truncate">@property.PropertyType &middot; Up to @property.MaxGuests guests</div>
+                            <div class="property-subtitle text-slate small">Available this month</div>
+                            <div class="property-price">
+                                <strong>$@property.PricePerNight.ToString("F0")</strong> <span class="text-slate small">night</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <!-- Empty State -->
+    <div class="text-center py-5 my-5">
+        <i class="bi bi-search text-slate" style="font-size: 3rem; color: var(--primary-blue) !important;"></i>
+        <h4 class="fw-bold mt-3 text-charcoal">No properties found</h4>
+        <p class="text-slate small">Try adjusting your destination, property type, or price filters.</p>
+        <a asp-action="Index" class="btn btn-primary-baby mt-2 px-4">View All Properties</a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Toggle wishlist heart button
+        function toggleWishlist(btn, propertyId) {
+            btn.classList.toggle('active');
+            // Animate click scale
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                btn.style.transform = '';
+            }, 200);
+        }
+    </script>
+}
