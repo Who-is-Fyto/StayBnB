@@ -61,7 +61,7 @@
                             <i class="bi bi-heart me-1"></i>Wishlist
                         </a>
                         <a href="#trips" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">My Trips</a>
-                        <a href="#become-host" class="btn btn-sm btn-outline-baby d-none d-sm-inline-block">Become a Host</a>
+                        <a asp-controller="HostOnboarding" asp-action="Apply" class="btn btn-sm btn-outline-baby d-none d-sm-inline-block">Become a Host</a>
                     }
                     else if (isHost)
                     {
@@ -115,7 +115,7 @@
                                 <li><a class="dropdown-item py-2" href="#wishlist"><i class="bi bi-heart me-2"></i>Wishlist</a></li>
                                 <li><a class="dropdown-item py-2" href="#trips"><i class="bi bi-briefcase me-2"></i>Trips</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item py-2 text-primary fw-semibold" href="#become-host"><i class="bi bi-house-add me-2"></i>Become a Host</a></li>
+                                <li><a class="dropdown-item py-2 text-primary fw-semibold" asp-controller="HostOnboarding" asp-action="Apply"><i class="bi bi-house-add me-2"></i>Become a Host</a></li>
                             }
                             else if (isHost)
                             {
@@ -141,7 +141,7 @@
                 {
                     <!-- Unauthenticated Navigation -->
                     <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-sm-inline-block">Explore</a>
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-md-inline-block">Become a Host</a>
+                    <a asp-controller="HostOnboarding" asp-action="Apply" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-md-inline-block">Become a Host</a>
                     <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1">Log in</a>
                     <a asp-controller="Account" asp-action="Register" class="btn btn-sm btn-primary-baby rounded-pill px-3 py-1">Sign up</a>
                 }

@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 // Database configuration (supports SQLite and SQL Server)
 var provider = builder.Configuration["DatabaseProvider"] ?? "Sqlite";

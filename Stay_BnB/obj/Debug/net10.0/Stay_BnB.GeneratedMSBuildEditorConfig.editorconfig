@@ -54,6 +54,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/michael/Documents/StayBnB/Stay_BnB/Views/HostOnboarding/Apply.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9zdE9uYm9hcmRpbmcvQXBwbHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/michael/Documents/StayBnB/Stay_BnB/Views/HostOnboarding/Status.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9zdE9uYm9hcmRpbmcvU3RhdHVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/michael/Documents/StayBnB/Stay_BnB/Views/Properties/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvcGVydGllcy9EZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 

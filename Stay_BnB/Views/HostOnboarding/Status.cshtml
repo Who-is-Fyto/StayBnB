@@ -1,0 +1,117 @@
+@model Stay_BnB.ViewModels.Host.ApplicationStatusViewModel
+@{
+    ViewData["Title"] = "Hosting Application Status";
+    var coverImg = Model.Property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+        ?? Model.Property.Images.FirstOrDefault()?.ImageUrl 
+        ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-8">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="p-4 bg-pearl border-bottom d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold text-charcoal mb-0">Application Status</h4>
+                    <span class="text-slate small">Submitted on @Model.Application.AppliedAt.ToString("MMMM dd, yyyy")</span>
+                </div>
+                <div>
+                    @if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending)
+                    {
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">Pending Review</span>
+                    }
+                    else if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved)
+                    {
+                        <span class="badge bg-success px-3 py-2 fs-6">Approved</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger px-3 py-2 fs-6">Changes Requested</span>
+                    }
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <!-- Status Timeline -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-charcoal mb-3">Review Progress</h6>
+                    <div class="d-flex align-items-center justify-content-between position-relative mb-4">
+                        <div class="text-center" style="z-index: 2;">
+                            <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-1" style="width: 36px; height: 36px;">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="small fw-semibold text-charcoal">Submitted</div>
+                        </div>
+
+                        <div class="text-center" style="z-index: 2;">
+                            <div class="rounded-circle @(Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending ? "bg-primary text-white" : "bg-success text-white") d-inline-flex align-items-center justify-content-center mb-1" style="width: 36px; height: 36px; background-color: var(--primary-blue) !important;">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="small fw-semibold text-charcoal">Under Review</div>
+                        </div>
+
+                        <div class="text-center" style="z-index: 2;">
+                            <div class="rounded-circle @(Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved ? "bg-success text-white" : "bg-light text-muted border") d-inline-flex align-items-center justify-content-center mb-1" style="width: 36px; height: 36px;">
+                                <i class="bi bi-award"></i>
+                            </div>
+                            <div class="small fw-semibold text-charcoal">Host Transition</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Banner -->
+                @if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Pending)
+                {
+                    <div class="p-3 bg-light rounded-3 border mb-4 text-charcoal small">
+                        <strong>What happens next?</strong> An administrator will evaluate your submitted property details and images. Once approved, your account will be upgraded to the <strong>Host</strong> role, your Guest role will be transitioned, and your property will become visible in the public search catalog.
+                    </div>
+                }
+                else if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Approved)
+                {
+                    <div class="alert alert-success mb-4">
+                        <h6 class="fw-bold mb-1">Congratulations! You are now a Host.</h6>
+                        <p class="small mb-2">Your application has been approved and your listing is now active.</p>
+                        <a href="/Host/Dashboard" class="btn btn-sm btn-success">Go to Host Dashboard</a>
+                    </div>
+                }
+                else if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Rejected)
+                {
+                    <div class="alert alert-danger mb-4">
+                        <h6 class="fw-bold mb-1">Application Declined</h6>
+                        <p class="small mb-0">Reason: @(Model.Application.RejectionReason ?? "Does not meet property standards.")</p>
+                    </div>
+                }
+
+                <!-- Property Details Card -->
+                <div class="border rounded-3 p-3 bg-pearl">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <img src="@coverImg" alt="@Model.Property.Title" class="w-100 rounded-3 object-fit-cover" style="height: 120px;" />
+                        </div>
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-charcoal mb-1">@Model.Property.Title</h6>
+                            <div class="small text-slate mb-1">@Model.Property.Address, @Model.Property.City</div>
+                            <div class="small text-slate mb-2">@Model.Property.PropertyType &middot; Up to @Model.Property.MaxGuests guests</div>
+                            <div class="fw-bold text-charcoal">$@Model.Property.PricePerNight.ToString("F0") <span class="small text-slate fw-normal">per night</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4 me-2">Return Home</a>
+                    @if (Model.Application.Status == Stay_BnB.Models.Enums.ApplicationStatus.Rejected)
+                    {
+                        <a asp-action="Apply" class="btn btn-primary-baby px-4">Submit New Application</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
