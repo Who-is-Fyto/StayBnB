@@ -123,6 +123,9 @@
                                     </form>
 
                                     <div class="d-flex gap-1">
+                                        <a asp-action="ConfigureCheckIn" asp-route-id="@property.Id" class="btn btn-sm btn-light border rounded-circle p-2" title="Check-in Rules & Codes">
+                                            <i class="bi bi-key text-slate"></i>
+                                        </a>
                                         <a asp-action="EditListing" asp-route-id="@property.Id" class="btn btn-sm btn-light border rounded-circle p-2" title="Edit Listing Details">
                                             <i class="bi bi-pencil text-slate"></i>
                                         </a>

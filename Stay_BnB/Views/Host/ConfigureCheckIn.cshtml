@@ -1,0 +1,139 @@
+@model Stay_BnB.ViewModels.CheckIn.ConfigureCheckInViewModel
+@{
+    ViewData["Title"] = "Configure Check-in - " + Model.PropertyTitle;
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <!-- Back navigation -->
+            <div class="mb-3">
+                <a asp-action="Listings" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to Listings
+                </a>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5" style="background-color: var(--bg-white);">
+                <div class="mb-4">
+                    <span class="badge badge-blue px-3 py-1 mb-2">Check-in Setup</span>
+                    <h2 class="h3 fw-bold text-charcoal m-0">Arrival & Access Rules</h2>
+                    <p class="text-slate small m-0">Define how guests access <strong>@Model.PropertyTitle</strong>, arrival times, and required ID verification.</p>
+                </div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+                        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="ConfigureCheckIn" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="PropertyId" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small"></div>
+
+                    <!-- 1. Procedure Name & Times -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">1. Schedule & Procedure</h5>
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label small fw-semibold text-charcoal"></label>
+                            <input asp-for="Title" class="form-control rounded-3" placeholder="e.g. Smart Keypad Self Check-in" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="CheckInTime" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="CheckInTime" class="form-control rounded-3" placeholder="e.g. 15:00" />
+                                <span asp-validation-for="CheckInTime" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CheckOutTime" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="CheckOutTime" class="form-control rounded-3" placeholder="e.g. 11:00" />
+                                <span asp-validation-for="CheckOutTime" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Entry Access Method & Code -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">2. Entry Method & Digital Codes</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="EntryMethod" class="form-label small fw-semibold text-charcoal"></label>
+                                <select asp-for="EntryMethod" class="form-select rounded-3">
+                                    <option value="Keypad">Keypad Door Lock</option>
+                                    <option value="Lockbox">Lockbox with Key</option>
+                                    <option value="Smart Lock">Smart Mobile Lock</option>
+                                    <option value="Host Meetup">Host In-Person Greeter</option>
+                                    <option value="Building Front Desk">Building Front Desk / Concierge</option>
+                                </select>
+                                <span asp-validation-for="EntryMethod" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EntryCode" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="EntryCode" class="form-control rounded-3" placeholder="e.g. 4829# or Lockbox PIN" />
+                                <span asp-validation-for="EntryCode" class="text-danger small"></span>
+                                <div class="text-slate small mt-1">Shared with guests only after identity verification.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Wi-Fi Access -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">3. Wi-Fi Network Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="WifiNetwork" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="WifiNetwork" class="form-control rounded-3" placeholder="e.g. LoftWiFi-5G" />
+                                <span asp-validation-for="WifiNetwork" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="WifiPassword" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="WifiPassword" class="form-control rounded-3" placeholder="e.g. Welcome2Staybnb!" />
+                                <span asp-validation-for="WifiPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Parking & Rules -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">4. Arrival Notes & House Rules</h5>
+                        <div class="mb-3">
+                            <label asp-for="ParkingInstructions" class="form-label small fw-semibold text-charcoal"></label>
+                            <input asp-for="ParkingInstructions" class="form-control rounded-3" placeholder="e.g. Park in underground bay #14 with pass..." />
+                            <span asp-validation-for="ParkingInstructions" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="HouseRules" class="form-label small fw-semibold text-charcoal"></label>
+                            <textarea asp-for="HouseRules" rows="3" class="form-control rounded-3" placeholder="e.g. No parties, quiet hours after 22:00, take shoes off at entrance..."></textarea>
+                            <span asp-validation-for="HouseRules" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- 5. Security & Verification Requirement -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-charcoal mb-2">5. Guest Identity Verification</h5>
+                        <div class="form-check form-switch p-2">
+                            <input class="form-check-input ms-0 me-3" type="checkbox" asp-for="RequireIdUpload" role="switch" id="reqIdSwitch" style="width: 2.5em; height: 1.3em;">
+                            <label class="form-check-label text-charcoal fw-semibold" for="reqIdSwitch">
+                                Require ID or Passport upload prior to revealing access codes
+                            </label>
+                            <div class="text-slate small ps-5">When enabled, entry codes and Wi-Fi credentials stay locked until you inspect and verify the guest's uploaded document.</div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a asp-action="Listings" class="btn btn-light rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                            Save Check-in Rules
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -98,8 +98,8 @@
 
                                         @if (booking.Status == Stay_BnB.Models.Enums.BookingStatus.Approved)
                                         {
-                                            <a href="#checkin-workflow" class="btn btn-sm btn-primary-baby py-1 px-2">
-                                                <i class="bi bi-pass me-1"></i>Check-in
+                                            <a asp-controller="CheckIn" asp-action="Start" asp-route-bookingId="@booking.Id" class="btn btn-sm btn-primary-baby py-1 px-2">
+                                                <i class="bi bi-pass me-1"></i>Digital Check-in
                                             </a>
                                         }
 

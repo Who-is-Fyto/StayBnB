@@ -200,6 +200,13 @@
                                             </div>
                                         </div>
                                     }
+                                    else if (res.Status == BookingStatus.Approved && res.GuestCheckIn != null)
+                                    {
+                                        int docCount = res.GuestCheckIn.GuestDocuments.Count;
+                                        <a asp-action="VerifyDocuments" asp-route-id="@res.GuestCheckIn.Id" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 small">
+                                            <i class="bi bi-file-earmark-person me-1"></i>Verify ID (@docCount)
+                                        </a>
+                                    }
                                     else
                                     {
                                         <span class="text-slate small">-</span>

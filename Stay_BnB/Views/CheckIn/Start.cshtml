@@ -1,0 +1,341 @@
+@model Stay_BnB.ViewModels.CheckIn.GuestCheckInWizardViewModel
+@using Stay_BnB.Models.Enums
+@{
+    ViewData["Title"] = "Digital Check-in - " + Model.PropertyTitle;
+    bool isVerified = Model.Status == CheckInStatus.Verified || Model.Documents.Any(d => d.Status == DocumentStatus.Verified);
+    bool hasUploaded = Model.Documents.Any();
+    bool hasRejected = Model.Documents.Any(d => d.Status == DocumentStatus.Rejected);
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+            <!-- Back navigation -->
+            <div class="mb-3">
+                <a asp-controller="Booking" asp-action="MyTrips" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to My Trips
+                </a>
+            </div>
+
+            <!-- Header -->
+            <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mb-4" style="background-color: var(--bg-white);">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                    <div>
+                        <span class="badge badge-blue px-3 py-1 mb-2">Guest Check-in</span>
+                        <h1 class="h3 fw-bold text-charcoal m-0">@Model.PropertyTitle</h1>
+                        <p class="text-slate small m-0">@Model.PropertyAddress, @Model.PropertyCity &bull; Hosted by @Model.HostName</p>
+                    </div>
+                    <div>
+                        @if (isVerified)
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: #DCFCE7; color: #16A34A;">
+                                <i class="bi bi-shield-check me-1"></i>Verified & Unlocked
+                            </span>
+                        }
+                        else if (hasUploaded && !hasRejected)
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: #FEF3C7; color: #D97706;">
+                                <i class="bi bi-hourglass-split me-1"></i>Pending Host Review
+                            </span>
+                        }
+                        else if (hasRejected)
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: #FEE2E2; color: #DC2626;">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Re-upload Required
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: var(--accent-pink-light); color: var(--accent-pink);">
+                                <i class="bi bi-file-earmark-person me-1"></i>ID Required
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+                        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <!-- Wizard Progress Steps Navigation -->
+                <div class="d-flex justify-content-between align-items-center mb-5 position-relative">
+                    <div class="w-100 position-absolute" style="top: 50%; height: 2px; background-color: var(--border-subtle); z-index: 1;"></div>
+                    
+                    <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="1" class="text-decoration-none position-relative" style="z-index: 2;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm fw-bold @(Model.ActiveStep >= 1 ? "bg-primary-baby text-white" : "bg-white text-slate border")" style="width: 40px; height: 40px;">
+                            1
+                        </div>
+                        <span class="d-none d-md-block small text-slate text-center mt-1 position-absolute" style="width: 100px; left: -30px;">Overview</span>
+                    </a>
+
+                    <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="2" class="text-decoration-none position-relative" style="z-index: 2;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm fw-bold @(Model.ActiveStep >= 2 ? "bg-primary-baby text-white" : "bg-white text-slate border")" style="width: 40px; height: 40px;">
+                            2
+                        </div>
+                        <span class="d-none d-md-block small text-slate text-center mt-1 position-absolute" style="width: 100px; left: -30px;">ID Upload</span>
+                    </a>
+
+                    <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="3" class="text-decoration-none position-relative" style="z-index: 2;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm fw-bold @(Model.ActiveStep >= 3 ? "bg-primary-baby text-white" : "bg-white text-slate border")" style="width: 40px; height: 40px;">
+                            3
+                        </div>
+                        <span class="d-none d-md-block small text-slate text-center mt-1 position-absolute" style="width: 100px; left: -30px;">Verification</span>
+                    </a>
+
+                    <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="4" class="text-decoration-none position-relative" style="z-index: 2;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm fw-bold @(Model.ActiveStep >= 4 ? "bg-primary-baby text-white" : "bg-white text-slate border")" style="width: 40px; height: 40px;">
+                            4
+                        </div>
+                        <span class="d-none d-md-block small text-slate text-center mt-1 position-absolute" style="width: 100px; left: -30px;">Access Codes</span>
+                    </a>
+                </div>
+
+                <!-- Step 1: Trip & Arrival Summary -->
+                @if (Model.ActiveStep == 1)
+                {
+                    <div>
+                        <h4 class="fw-bold text-charcoal mb-2">Step 1: Reservation & Arrival Summary</h4>
+                        <p class="text-slate small mb-4">Confirm your arrival details before uploading your identification for check-in clearance.</p>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-4 border" style="background-color: var(--bg-pearl);">
+                                    <span class="text-slate small">Check-in Date & Time</span>
+                                    <div class="fw-bold text-charcoal fs-5">@Model.CheckInDate.ToString("ddd, MMM dd, yyyy")</div>
+                                    <div class="text-slate small">From @Model.Steps.CheckInTime onwards</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-4 border" style="background-color: var(--bg-pearl);">
+                                    <span class="text-slate small">Check-out Date & Time</span>
+                                    <div class="fw-bold text-charcoal fs-5">@Model.CheckOutDate.ToString("ddd, MMM dd, yyyy")</div>
+                                    <div class="text-slate small">Until @Model.Steps.CheckOutTime</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-4 border mb-4" style="background-color: var(--bg-pearl);">
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <span class="text-slate small">Travelers</span>
+                                    <div class="fw-semibold text-charcoal">@Model.GuestCount guest@(Model.GuestCount > 1 ? "s" : "")</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-slate small">Host Contact</span>
+                                    <div class="fw-semibold text-charcoal">@Model.HostName (@Model.HostEmail)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="2" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                                Continue to ID Verification <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                <!-- Step 2: Document Upload -->
+                @if (Model.ActiveStep == 2)
+                {
+                    <div>
+                        <h4 class="fw-bold text-charcoal mb-2">Step 2: Identity Document Verification</h4>
+                        <p class="text-slate small mb-4">
+                            To ensure safety and comply with property guidelines, your host requires government-issued identification prior to arrival.
+                        </p>
+
+                        <form asp-action="UploadDocument" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                            <input type="hidden" name="checkInId" value="@Model.CheckInId" />
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-charcoal">Select Document Type</label>
+                                <select name="documentType" class="form-select rounded-3">
+                                    <option value="Passport">Passport</option>
+                                    <option value="National Identity Card">National Identity Card</option>
+                                    <option value="Driver's License">Driver's License</option>
+                                </select>
+                            </div>
+
+                            <div class="p-4 border border-2 border-dashed rounded-4 text-center mb-4" style="background-color: var(--bg-pearl);">
+                                <i class="bi bi-file-earmark-person fs-1 text-slate mb-2"></i>
+                                <div class="fw-semibold text-charcoal small mb-1">Choose ID or Passport file</div>
+                                <div class="text-slate small mb-3">Accepted formats: JPG, PNG, WEBP, PDF (max 10MB)</div>
+                                <input type="file" name="documentFile" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-control rounded-3 mx-auto" style="max-width: 400px;" required />
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="1" class="btn btn-light rounded-pill px-4">
+                                    <i class="bi bi-arrow-left me-1"></i>Previous
+                                </a>
+                                <button type="submit" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                                    Submit for Verification <i class="bi bi-upload ms-1"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                }
+
+                <!-- Step 3: Verification Status -->
+                @if (Model.ActiveStep == 3)
+                {
+                    <div>
+                        <h4 class="fw-bold text-charcoal mb-2">Step 3: Verification Review</h4>
+                        <p class="text-slate small mb-4">Your identification has been submitted to your host for inspection.</p>
+
+                        @if (isVerified)
+                        {
+                            <div class="p-4 rounded-4 border text-center mb-4" style="background-color: #F0FDF4; border-color: #BBF7D0 !important;">
+                                <i class="bi bi-check-circle-fill text-success fs-1 mb-2"></i>
+                                <h5 class="fw-bold text-charcoal">Verification Complete!</h5>
+                                <p class="text-slate small mb-3">Your host has inspected and approved your ID. Arrival access codes and Wi-Fi credentials are now unlocked.</p>
+                                <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="4" class="btn btn-primary-baby rounded-pill px-4 text-white">
+                                    View Access Codes & Instructions <i class="bi bi-key-fill ms-1"></i>
+                                </a>
+                            </div>
+                        }
+                        else if (hasRejected)
+                        {
+                            <div class="p-4 rounded-4 border text-center mb-4" style="background-color: #FEF2F2; border-color: #FECACA !important;">
+                                <i class="bi bi-x-circle-fill text-danger fs-1 mb-2"></i>
+                                <h5 class="fw-bold text-charcoal">Verification Declined</h5>
+                                <p class="text-slate small mb-3">Your previous document was not approved by the host. Please re-upload a clear copy to unlock check-in.</p>
+                                <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="2" class="btn btn-outline-danger rounded-pill px-4">
+                                    Re-upload Identification <i class="bi bi-arrow-repeat ms-1"></i>
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-4 rounded-4 border text-center mb-4" style="background-color: #FFFBEB; border-color: #FDE68A !important;">
+                                <i class="bi bi-clock-history text-warning fs-1 mb-2"></i>
+                                <h5 class="fw-bold text-charcoal">Host Review In Progress</h5>
+                                <p class="text-slate small mb-0">Your host (@Model.HostName) has been notified. As soon as they confirm your document, your entry codes will appear on Step 4.</p>
+                            </div>
+                        }
+
+                        <!-- Uploaded Documents History -->
+                        <h6 class="fw-bold text-charcoal mb-3">Submitted Documents</h6>
+                        <div class="list-group rounded-4 mb-4">
+                            @foreach (var doc in Model.Documents)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3 border">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="bi bi-file-earmark-check fs-4 text-slate"></i>
+                                        <div>
+                                            <div class="fw-semibold text-charcoal small">@doc.DocumentType</div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">Submitted on @doc.UploadedAt.ToString("MMM dd, yyyy HH:mm") UTC</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        @switch (doc.Status)
+                                        {
+                                            case DocumentStatus.Verified:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #DCFCE7; color: #16A34A;">Verified</span>
+                                                break;
+                                            case DocumentStatus.Rejected:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #FEE2E2; color: #DC2626;">Declined</span>
+                                                break;
+                                            default:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #FEF3C7; color: #D97706;">Pending</span>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="2" class="btn btn-light rounded-pill px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Re-upload Document
+                            </a>
+                            @if (isVerified)
+                            {
+                                <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="4" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                                    Next: Access Codes <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Step 4: Access Codes & Entry Instructions -->
+                @if (Model.ActiveStep == 4)
+                {
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="fw-bold text-charcoal m-0">Step 4: Access Codes & Arrival Guide</h4>
+                            <span class="badge rounded-pill px-3 py-1" style="background-color: #DCFCE7; color: #16A34A;">
+                                <i class="bi bi-unlock-fill me-1"></i>Unlocked
+                            </span>
+                        </div>
+                        <p class="text-slate small mb-4">Welcome to your stay! Here are your digital entry codes, Wi-Fi credentials, and house guidelines.</p>
+
+                        <!-- Keypad / Lockbox Code Card -->
+                        <div class="p-4 rounded-4 mb-4 text-center border" style="background-color: var(--primary-blue-light); border-color: rgba(56, 189, 248, 0.4) !important;">
+                            <span class="text-slate small fw-semibold">Entry Method: @Model.Steps.EntryMethod</span>
+                            <div class="display-5 fw-bold text-charcoal my-2 tracking-wide font-monospace">
+                                @Model.Steps.EntryCode
+                            </div>
+                            <div class="text-slate small">Enter this digital code on the door lock upon arrival.</div>
+                        </div>
+
+                        <!-- Wi-Fi Credentials Card -->
+                        <div class="card border rounded-4 p-4 mb-4" style="background-color: var(--bg-pearl);">
+                            <h5 class="fw-bold text-charcoal mb-3"><i class="bi bi-wifi text-primary me-2"></i>Wi-Fi Credentials</h5>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <span class="text-slate small">Network Name (SSID)</span>
+                                    <div class="fw-bold text-charcoal fs-5">@Model.Steps.WifiNetwork</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-slate small">Network Password</span>
+                                    <div class="fw-bold text-charcoal fs-5 font-monospace">@Model.Steps.WifiPassword</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parking & Arrival Notes -->
+                        @if (!string.IsNullOrWhiteSpace(Model.Steps.ParkingInstructions))
+                        {
+                            <div class="card border rounded-4 p-4 mb-4" style="background-color: var(--bg-white);">
+                                <h5 class="fw-bold text-charcoal mb-2"><i class="bi bi-p-square text-primary me-2"></i>Parking Information</h5>
+                                <p class="text-slate small m-0">@Model.Steps.ParkingInstructions</p>
+                            </div>
+                        }
+
+                        <!-- House Rules -->
+                        @if (!string.IsNullOrWhiteSpace(Model.Steps.HouseRules))
+                        {
+                            <div class="card border rounded-4 p-4 mb-4" style="background-color: var(--bg-white);">
+                                <h5 class="fw-bold text-charcoal mb-2"><i class="bi bi-journal-text text-primary me-2"></i>House Rules</h5>
+                                <p class="text-slate small m-0">@Model.Steps.HouseRules</p>
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a asp-action="Start" asp-route-bookingId="@Model.BookingId" asp-route-step="3" class="btn btn-light rounded-pill px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Previous
+                            </a>
+                            <a asp-controller="Booking" asp-action="MyTrips" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                                Complete Check-in & Return to Trips
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

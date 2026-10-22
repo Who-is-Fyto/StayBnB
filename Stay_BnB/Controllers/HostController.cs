@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Stay_BnB.Data;
 using Stay_BnB.Models;
 using Stay_BnB.Models.Enums;
 using Stay_BnB.Services;
+using Stay_BnB.ViewModels.CheckIn;
 using Stay_BnB.ViewModels.Host;
 
 namespace Stay_BnB.Controllers;
@@ -471,6 +473,8 @@ public class HostController : Controller
             .Include(b => b.Property)
                 .ThenInclude(p => p!.Images)
             .Include(b => b.Payment)
+            .Include(b => b.GuestCheckIn)
+                .ThenInclude(c => c!.GuestDocuments)
             .Where(b => b.Property != null && b.Property.HostId == user.Id)
             .OrderByDescending(b => b.CreatedAt)
             .ToListAsync();
@@ -631,5 +635,271 @@ public class HostController : Controller
         await _context.SaveChangesAsync();
         TempData["InfoMessage"] = $"Reservation #{booking.Id} was declined.";
         return RedirectToAction(nameof(Reservations));
+    }
+
+    // GET: /Host/ConfigureCheckIn/5
+    // Form to configure check-in instructions, key codes, and wifi
+    [HttpGet]
+    public async Task<IActionResult> ConfigureCheckIn(int id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var property = await _context.HostProperties
+            .Include(p => p.CheckInProcess)
+            .FirstOrDefaultAsync(p => p.Id == id && p.HostId == user.Id);
+
+        if (property == null) return NotFound();
+
+        CheckInStepsData steps;
+        if (property.CheckInProcess != null && !string.IsNullOrWhiteSpace(property.CheckInProcess.StepsJson))
+        {
+            try
+            {
+                steps = JsonSerializer.Deserialize<CheckInStepsData>(property.CheckInProcess.StepsJson) ?? new CheckInStepsData();
+            }
+            catch
+            {
+                steps = new CheckInStepsData { HouseRules = property.CheckInProcess.StepsJson };
+            }
+        }
+        else
+        {
+            steps = new CheckInStepsData();
+        }
+
+        var model = new ConfigureCheckInViewModel
+        {
+            PropertyId = property.Id,
+            PropertyTitle = property.Title,
+            Title = property.CheckInProcess?.Title ?? "Self check-in with keypad or lockbox",
+            CheckInTime = steps.CheckInTime,
+            CheckOutTime = steps.CheckOutTime,
+            EntryMethod = steps.EntryMethod,
+            EntryCode = steps.EntryCode,
+            WifiNetwork = steps.WifiNetwork,
+            WifiPassword = steps.WifiPassword,
+            ParkingInstructions = steps.ParkingInstructions,
+            HouseRules = steps.HouseRules,
+            RequireIdUpload = steps.RequireIdUpload
+        };
+
+        return View(model);
+    }
+
+    // POST: /Host/ConfigureCheckIn/5
+    // Save updated arrival instructions and access codes
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfigureCheckIn(ConfigureCheckInViewModel model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var property = await _context.HostProperties
+            .Include(p => p.CheckInProcess)
+            .FirstOrDefaultAsync(p => p.Id == model.PropertyId && p.HostId == user.Id);
+
+        if (property == null) return NotFound();
+
+        if (!ModelState.IsValid)
+        {
+            model.PropertyTitle = property.Title;
+            return View(model);
+        }
+
+        var steps = new CheckInStepsData
+        {
+            CheckInTime = model.CheckInTime,
+            CheckOutTime = model.CheckOutTime,
+            EntryMethod = model.EntryMethod,
+            EntryCode = model.EntryCode,
+            WifiNetwork = model.WifiNetwork,
+            WifiPassword = model.WifiPassword,
+            ParkingInstructions = model.ParkingInstructions,
+            HouseRules = model.HouseRules,
+            RequireIdUpload = model.RequireIdUpload
+        };
+
+        var stepsJson = JsonSerializer.Serialize(steps);
+
+        if (property.CheckInProcess == null)
+        {
+            property.CheckInProcess = new CheckInProcess
+            {
+                PropertyId = property.Id,
+                Title = model.Title,
+                StepsJson = stepsJson,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.CheckInProcesses.Add(property.CheckInProcess);
+        }
+        else
+        {
+            property.CheckInProcess.Title = model.Title;
+            property.CheckInProcess.StepsJson = stepsJson;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Audit log
+        await _activityLogger.LogAsync(
+            user.Id,
+            "Check-In Configured",
+            ActivityType.PropertyCreated,
+            $"Host updated check-in instructions and entry rules for '{property.Title}'.");
+
+        TempData["SuccessMessage"] = "Check-in procedure and access codes have been saved.";
+        return RedirectToAction(nameof(Listings));
+    }
+
+    // GET: /Host/VerifyDocuments/5
+    // Interface for host to review uploaded guest identification
+    [HttpGet]
+    public async Task<IActionResult> VerifyDocuments(int id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var checkIn = await _context.GuestCheckIns
+            .Include(c => c.Booking)
+                .ThenInclude(b => b!.Guest)
+            .Include(c => c.Booking)
+                .ThenInclude(b => b!.Property)
+            .Include(c => c.GuestDocuments)
+            .FirstOrDefaultAsync(c => c.Id == id && c.Booking != null && c.Booking.Property != null && c.Booking.Property.HostId == user.Id);
+
+        if (checkIn == null || checkIn.Booking == null || checkIn.Booking.Property == null)
+        {
+            return NotFound();
+        }
+
+        var model = new HostDocumentVerificationViewModel
+        {
+            GuestCheckInId = checkIn.Id,
+            BookingId = checkIn.BookingId,
+            PropertyTitle = checkIn.Booking.Property.Title,
+            GuestName = checkIn.Booking.Guest?.FullName ?? "Guest",
+            GuestEmail = checkIn.Booking.Guest?.Email ?? string.Empty,
+            CheckInDate = checkIn.Booking.CheckInDate,
+            CheckOutDate = checkIn.Booking.CheckOutDate,
+            CheckInStatus = checkIn.Status,
+            Documents = checkIn.GuestDocuments.OrderByDescending(d => d.UploadedAt).ToList()
+        };
+
+        return View(model);
+    }
+
+    // POST: /Host/ApproveDocument
+    // Approve uploaded guest ID/passport
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveDocument(int documentId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var document = await _context.GuestDocuments
+            .Include(d => d.GuestCheckIn)
+                .ThenInclude(c => c!.Booking)
+                    .ThenInclude(b => b!.Property)
+            .Include(d => d.GuestCheckIn)
+                .ThenInclude(c => c!.GuestDocuments)
+            .FirstOrDefaultAsync(d => d.Id == documentId);
+
+        if (document == null || document.GuestCheckIn?.Booking?.Property == null)
+        {
+            return NotFound();
+        }
+
+        if (document.GuestCheckIn.Booking.Property.HostId != user.Id)
+        {
+            return Forbid();
+        }
+
+        document.Status = DocumentStatus.Verified;
+
+        // If all documents verified, update overall check-in status
+        var allVerified = document.GuestCheckIn.GuestDocuments
+            .Where(d => d.Id != document.Id)
+            .All(d => d.Status == DocumentStatus.Verified);
+
+        if (allVerified)
+        {
+            document.GuestCheckIn.Status = CheckInStatus.Verified;
+        }
+
+        // Audit log
+        await _activityLogger.LogAsync(
+            user.Id,
+            "Document Verified",
+            ActivityType.SecurityEvent,
+            $"Host verified {document.DocumentType} for reservation #{document.GuestCheckIn.BookingId}.");
+
+        // Notify guest
+        _context.Notifications.Add(new Notification
+        {
+            UserId = document.GuestCheckIn.Booking.GuestId,
+            Title = "Identity Document Verified",
+            Message = $"Your {document.DocumentType} for '{document.GuestCheckIn.Booking.Property.Title}' was approved. Check-in access is ready!",
+            Type = NotificationType.CheckInUpdate,
+            TargetUrl = $"/CheckIn/Start?bookingId={document.GuestCheckIn.BookingId}&step=4",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+        TempData["SuccessMessage"] = $"Document #{document.Id} approved successfully.";
+        return RedirectToAction(nameof(VerifyDocuments), new { id = document.GuestCheckInId });
+    }
+
+    // POST: /Host/RejectDocument
+    // Reject uploaded guest document and request re-upload
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectDocument(int documentId, string? reason)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var document = await _context.GuestDocuments
+            .Include(d => d.GuestCheckIn)
+                .ThenInclude(c => c!.Booking)
+                    .ThenInclude(b => b!.Property)
+            .FirstOrDefaultAsync(d => d.Id == documentId);
+
+        if (document == null || document.GuestCheckIn?.Booking?.Property == null)
+        {
+            return NotFound();
+        }
+
+        if (document.GuestCheckIn.Booking.Property.HostId != user.Id)
+        {
+            return Forbid();
+        }
+
+        document.Status = DocumentStatus.Rejected;
+        document.GuestCheckIn.Status = CheckInStatus.InProgress;
+
+        // Audit log
+        await _activityLogger.LogAsync(
+            user.Id,
+            "Document Rejected",
+            ActivityType.SecurityEvent,
+            $"Host rejected document #{document.Id} for reservation #{document.GuestCheckIn.BookingId}. Reason: {reason ?? "Unclear image"}");
+
+        // Notify guest
+        _context.Notifications.Add(new Notification
+        {
+            UserId = document.GuestCheckIn.Booking.GuestId,
+            Title = "Document Requires Re-upload",
+            Message = $"Your {document.DocumentType} for '{document.GuestCheckIn.Booking.Property.Title}' was rejected. Reason: {reason ?? "Please re-upload a clear, readable copy."}",
+            Type = NotificationType.CheckInUpdate,
+            TargetUrl = $"/CheckIn/Start?bookingId={document.GuestCheckIn.BookingId}&step=2",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+        TempData["ErrorMessage"] = $"Document #{document.Id} was rejected.";
+        return RedirectToAction(nameof(VerifyDocuments), new { id = document.GuestCheckInId });
     }
 }

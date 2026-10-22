@@ -1,0 +1,216 @@
+@model Stay_BnB.ViewModels.CheckIn.HostDocumentVerificationViewModel
+@using Stay_BnB.Models.Enums
+@{
+    ViewData["Title"] = "Verify Guest Documents - " + Model.PropertyTitle;
+}
+
+<div class="container py-3">
+    <!-- Back navigation -->
+    <div class="mb-3">
+        <a asp-action="Reservations" class="text-decoration-none text-slate small">
+            <i class="bi bi-chevron-left me-1"></i>Back to Reservations
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-blue px-3 py-1">Identity Verification</span>
+                <span class="text-slate small">Reservation #@Model.BookingId</span>
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">@Model.GuestName</h1>
+            <p class="text-slate small m-0">Review identity documents uploaded by the guest for <strong>@Model.PropertyTitle</strong>.</p>
+        </div>
+        <div>
+            @switch (Model.CheckInStatus)
+            {
+                case CheckInStatus.Pending:
+                    <span class="badge rounded-pill px-3 py-2" style="background-color: var(--accent-pink-light); color: var(--accent-pink);">
+                        <i class="bi bi-clock-history me-1"></i>Pending Upload
+                    </span>
+                    break;
+                case CheckInStatus.InProgress:
+                    <span class="badge rounded-pill px-3 py-2" style="background-color: #FEF3C7; color: #D97706;">
+                        <i class="bi bi-hourglass-split me-1"></i>Under Review
+                    </span>
+                    break;
+                case CheckInStatus.Verified:
+                case CheckInStatus.Completed:
+                    <span class="badge rounded-pill px-3 py-2" style="background-color: #DCFCE7; color: #16A34A;">
+                        <i class="bi bi-shield-check me-1"></i>Identity Verified
+                    </span>
+                    break;
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Reservation Summary Card -->
+    <div class="card border-0 rounded-4 shadow-sm p-4 mb-4" style="background-color: var(--bg-white);">
+        <h5 class="fw-bold text-charcoal mb-3">Reservation Details</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <span class="text-slate small">Guest Name</span>
+                <div class="fw-semibold text-charcoal">@Model.GuestName</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <span class="text-slate small">Guest Email</span>
+                <div class="fw-semibold text-charcoal">@Model.GuestEmail</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <span class="text-slate small">Check-in</span>
+                <div class="fw-semibold text-charcoal">@Model.CheckInDate.ToString("MMM dd, yyyy")</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <span class="text-slate small">Check-out</span>
+                <div class="fw-semibold text-charcoal">@Model.CheckOutDate.ToString("MMM dd, yyyy")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uploaded Documents Queue -->
+    <div class="card border-0 rounded-4 shadow-sm p-4" style="background-color: var(--bg-white);">
+        <h5 class="fw-bold text-charcoal mb-3">Uploaded Verification Documents (@Model.Documents.Count)</h5>
+
+        @if (!Model.Documents.Any())
+        {
+            <div class="text-center py-5">
+                <div class="text-slate mb-2"><i class="bi bi-file-earmark-person fs-1 text-muted"></i></div>
+                <div class="fw-semibold text-charcoal">No documents uploaded yet</div>
+                <div class="text-slate small">The guest has not yet submitted an identification file for this reservation.</div>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var doc in Model.Documents)
+                {
+                    bool isImage = doc.FileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                   doc.FileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                   doc.FileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                   doc.FileName.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+
+                    <div class="col-12 col-md-6">
+                        <div class="card border rounded-4 overflow-hidden shadow-sm h-100">
+                            <!-- Document Preview -->
+                            <div class="p-3 text-center" style="background-color: var(--bg-pearl); min-height: 200px;">
+                                @if (isImage)
+                                {
+                                    <a href="@doc.FileName" target="_blank" title="Click to view full image">
+                                        <img src="@doc.FileName" alt="@doc.DocumentType" class="img-fluid rounded-3 shadow-sm" style="max-height: 200px; object-fit: contain;" />
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="py-5">
+                                        <i class="bi bi-file-earmark-pdf text-danger fs-1 mb-2"></i>
+                                        <div class="fw-semibold small text-charcoal">PDF Document</div>
+                                        <a href="@doc.FileName" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-2">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i>Open File
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Document Details & Actions -->
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="fw-bold text-charcoal m-0">@doc.DocumentType</h6>
+                                        <span class="text-slate small" style="font-size: 0.75rem;">Uploaded @doc.UploadedAt.ToString("MMM dd, yyyy HH:mm") UTC</span>
+                                    </div>
+                                    <div>
+                                        @switch (doc.Status)
+                                        {
+                                            case DocumentStatus.Uploaded:
+                                            case DocumentStatus.PendingVerification:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #FEF3C7; color: #D97706; font-size: 0.75rem;">
+                                                    <i class="bi bi-clock me-1"></i>Pending Review
+                                                </span>
+                                                break;
+                                            case DocumentStatus.Verified:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #DCFCE7; color: #16A34A; font-size: 0.75rem;">
+                                                    <i class="bi bi-check-circle-fill me-1"></i>Verified
+                                                </span>
+                                                break;
+                                            case DocumentStatus.Rejected:
+                                                <span class="badge rounded-pill px-2 py-1" style="background-color: #FEE2E2; color: #DC2626; font-size: 0.75rem;">
+                                                    <i class="bi bi-x-circle-fill me-1"></i>Rejected
+                                                </span>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                    <a href="@doc.FileName" target="_blank" class="btn btn-sm btn-light rounded-pill px-3">
+                                        <i class="bi bi-eye me-1"></i>Inspect
+                                    </a>
+
+                                    @if (doc.Status != DocumentStatus.Verified)
+                                    {
+                                        <form asp-action="ApproveDocument" method="post" class="d-inline m-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="documentId" value="@doc.Id" />
+                                            <button type="submit" class="btn btn-sm btn-primary-baby rounded-pill px-3 text-white">
+                                                <i class="bi bi-check2 me-1"></i>Approve
+                                            </button>
+                                        </form>
+
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#rejectDocModal-@doc.Id">
+                                            Decline
+                                        </button>
+
+                                        <!-- Decline Modal -->
+                                        <div class="modal fade" id="rejectDocModal-@doc.Id" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content rounded-4 border-0 shadow">
+                                                    <div class="modal-header border-0 pb-0">
+                                                        <h5 class="modal-title fw-bold text-charcoal">Decline Document</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form asp-action="RejectDocument" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="documentId" value="@doc.Id" />
+                                                        <div class="modal-body py-3">
+                                                            <p class="text-slate small mb-3">
+                                                                State why this document was declined so the guest can submit a valid replacement.
+                                                            </p>
+                                                            <div class="mb-3">
+                                                                <label class="form-label small fw-semibold text-charcoal">Feedback Reason</label>
+                                                                <textarea name="reason" rows="3" class="form-control rounded-3" placeholder="e.g. Photo is blurry / cut off. Please re-upload a clear copy of your passport..."></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer border-0 pt-0">
+                                                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">Confirm Decline</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
