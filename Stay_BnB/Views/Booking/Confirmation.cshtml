@@ -1,0 +1,107 @@
+@model Stay_BnB.ViewModels.Booking.BookingConfirmationViewModel
+@{
+    ViewData["Title"] = "Booking Confirmation";
+    var coverImg = Model.Property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+        ?? Model.Property.Images.FirstOrDefault()?.ImageUrl 
+        ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+    var nights = (int)(Model.Booking.CheckOutDate - Model.Booking.CheckInDate).TotalDays;
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <!-- Header Banner -->
+            <div class="p-4 bg-pearl border-bottom text-center">
+                <div class="user-avatar-bubble mb-2 mx-auto" style="width: 52px; height: 52px; background-color: var(--primary-blue-light); color: var(--primary-blue-hover);">
+                    <i class="bi bi-calendar-check fs-4"></i>
+                </div>
+                <h3 class="fw-bold text-charcoal mb-1">Reservation Request Submitted</h3>
+                <p class="text-slate small mb-0">Booking Reference: <strong>#@Model.Booking.Id</strong> &middot; Submitted on @Model.Booking.CreatedAt.ToString("MMMM dd, yyyy")</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <!-- Status Card -->
+                <div class="p-3 bg-light rounded-3 border mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold text-charcoal small">Reservation Status</div>
+                        <div class="text-slate small">Awaiting host review and confirmation</div>
+                    </div>
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">Pending Host Approval</span>
+                </div>
+
+                <!-- Property Details Box -->
+                <div class="border rounded-3 p-3 bg-white mb-4 shadow-sm">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <img src="@coverImg" alt="@Model.Property.Title" class="w-100 rounded-3 object-fit-cover" style="height: 120px;" />
+                        </div>
+                        <div class="col-md-8">
+                            <span class="small text-slate fw-semibold">@Model.Property.PropertyType &middot; @Model.Property.City</span>
+                            <h5 class="fw-bold text-charcoal mb-1">@Model.Property.Title</h5>
+                            <div class="small text-slate">Hosted by @(Model.Property.Host?.FullName ?? "Host")</div>
+                            <div class="small text-charcoal mt-2">
+                                <i class="bi bi-geo-alt text-slate me-1"></i>@Model.Property.Address
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dates & Travelers Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-4">
+                        <div class="p-3 bg-pearl rounded-3 border h-100">
+                            <div class="small text-slate fw-semibold">Check-in</div>
+                            <div class="fw-bold text-charcoal">@Model.Booking.CheckInDate.ToString("ddd, MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3 bg-pearl rounded-3 border h-100">
+                            <div class="small text-slate fw-semibold">Checkout</div>
+                            <div class="fw-bold text-charcoal">@Model.Booking.CheckOutDate.ToString("ddd, MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3 bg-pearl rounded-3 border h-100">
+                            <div class="small text-slate fw-semibold">Duration & Guests</div>
+                            <div class="fw-bold text-charcoal">@nights @(nights == 1 ? "night" : "nights") &middot; @Model.Booking.GuestCount @(Model.Booking.GuestCount == 1 ? "guest" : "guests")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Receipt Breakdown -->
+                <div class="p-3 bg-pearl rounded-3 border mb-4">
+                    <h6 class="fw-bold text-charcoal mb-2">Price Summary</h6>
+                    <div class="d-flex flex-column gap-2 small">
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>$@Model.Property.PricePerNight.ToString("F0") x @nights nights</span>
+                            <span>$@((Model.Property.PricePerNight * nights).ToString("F2"))</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Cleaning fee</span>
+                            <span>$@Model.Property.CleaningFee.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Staybnb service fee</span>
+                            <span>$@Model.Property.ServiceFee.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal border-top pt-2 mt-1 fs-6 fw-bold">
+                            <span>Total Charged</span>
+                            <span>$@Model.Booking.TotalPrice.ToString("F2")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Steps Info -->
+                <div class="alert alert-light border small text-slate mb-4">
+                    <i class="bi bi-info-circle-fill me-1" style="color: var(--primary-blue);"></i>
+                    <strong>What's next?</strong> When the host confirms your reservation, you will receive an in-app notification. You can then complete your digital check-in and upload required verification documents.
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="MyTrips" class="btn btn-outline-secondary px-4">View All Trips</a>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby px-4">Explore More Places</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,133 @@
+@model Stay_BnB.ViewModels.Booking.MyTripsViewModel
+@{
+    ViewData["Title"] = "My Trips";
+    var currentFilter = Model.CurrentFilter ?? "All";
+}
+
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-charcoal mb-0">My Trips & Reservations</h3>
+            <span class="text-slate small">Track your upcoming stays, pending host requests, and booking history</span>
+        </div>
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby btn-sm">
+                <i class="bi bi-search me-1"></i>Find New Stays
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Status Filter Pills -->
+    <ul class="nav nav-pills gap-2 mb-4">
+        <li class="nav-item">
+            <a asp-action="MyTrips" asp-route-filter="All" class="nav-link rounded-pill px-4 @(currentFilter.Equals("All", StringComparison.OrdinalIgnoreCase) ? "active bg-dark" : "text-slate bg-light")">All Trips</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="MyTrips" asp-route-filter="Pending" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Pending", StringComparison.OrdinalIgnoreCase) ? "active bg-warning text-dark" : "text-slate bg-light")">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="MyTrips" asp-route-filter="Approved" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Approved", StringComparison.OrdinalIgnoreCase) ? "active bg-success text-white" : "text-slate bg-light")">Confirmed</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="MyTrips" asp-route-filter="Completed" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "active bg-info text-white" : "text-slate bg-light")">Completed</a>
+        </li>
+        <li class="nav-item">
+            <a asp-action="MyTrips" asp-route-filter="Cancelled" class="nav-link rounded-pill px-4 @(currentFilter.Equals("Cancelled", StringComparison.OrdinalIgnoreCase) ? "active bg-secondary text-white" : "text-slate bg-light")">Cancelled</a>
+        </li>
+    </ul>
+
+    <!-- Bookings Grid -->
+    @if (Model.Bookings.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var booking in Model.Bookings)
+            {
+                var coverImg = booking.Property?.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                    ?? booking.Property?.Images.FirstOrDefault()?.ImageUrl 
+                    ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80";
+                var nights = (int)(booking.CheckOutDate - booking.CheckInDate).TotalDays;
+
+                <div class="col">
+                    <div class="card shadow-sm border-0 rounded-4 overflow-hidden h-100">
+                        <div class="row g-0 h-100">
+                            <!-- Image Left -->
+                            <div class="col-sm-5 position-relative">
+                                <img src="@coverImg" alt="@booking.Property?.Title" class="w-100 h-100 object-fit-cover" style="min-height: 190px;" />
+                                <span class="badge position-absolute top-0 start-0 m-2 @(booking.Status == Stay_BnB.Models.Enums.BookingStatus.Approved ? "bg-success" : booking.Status == Stay_BnB.Models.Enums.BookingStatus.Pending ? "bg-warning text-dark" : booking.Status == Stay_BnB.Models.Enums.BookingStatus.Cancelled ? "bg-secondary" : "bg-dark")">
+                                    @booking.Status
+                                </span>
+                            </div>
+
+                            <!-- Body Right -->
+                            <div class="col-sm-7">
+                                <div class="card-body p-3 d-flex flex-column justify-content-between h-100">
+                                    <div>
+                                        <div class="text-slate small fw-semibold">@booking.Property?.City &middot; @nights nights</div>
+                                        <h6 class="fw-bold text-charcoal mb-1 text-truncate" title="@booking.Property?.Title">
+                                            @booking.Property?.Title
+                                        </h6>
+                                        <div class="small text-slate mb-2">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            @booking.CheckInDate.ToString("MMM dd") - @booking.CheckOutDate.ToString("MMM dd, yyyy")
+                                        </div>
+                                        <div class="small text-charcoal">
+                                            <strong>$@booking.TotalPrice.ToString("F0")</strong> total &middot; @booking.GuestCount @(booking.GuestCount == 1 ? "guest" : "guests")
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 pt-3 border-top mt-2">
+                                        <a asp-controller="Properties" asp-action="Details" asp-route-id="@booking.PropertyId" class="btn btn-sm btn-outline-secondary py-1 px-2">
+                                            Listing
+                                        </a>
+
+                                        @if (booking.Status == Stay_BnB.Models.Enums.BookingStatus.Approved)
+                                        {
+                                            <a href="#checkin-workflow" class="btn btn-sm btn-primary-baby py-1 px-2">
+                                                <i class="bi bi-pass me-1"></i>Check-in
+                                            </a>
+                                        }
+
+                                        @if (booking.Status == Stay_BnB.Models.Enums.BookingStatus.Pending || booking.Status == Stay_BnB.Models.Enums.BookingStatus.Approved)
+                                        {
+                                            <form asp-action="Cancel" asp-route-id="@booking.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 my-4 bg-pearl rounded-4 border">
+            <i class="bi bi-briefcase text-slate" style="font-size: 3rem; color: var(--primary-blue) !important;"></i>
+            <h5 class="fw-bold mt-3 text-charcoal">No trips booked yet</h5>
+            <p class="text-slate small mb-3">Time to dust off your bags and start planning your next getaway.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby px-4">Start Searching</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,158 @@
+@model Stay_BnB.ViewModels.Booking.CreateBookingViewModel
+@{
+    ViewData["Title"] = "Confirm and Pay";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-10 col-xl-9">
+        <!-- Header -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a asp-controller="Properties" asp-action="Details" asp-route-id="@Model.PropertyId" class="btn btn-outline-secondary btn-sm rounded-circle p-2" title="Back to listing">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h3 class="fw-bold text-charcoal mb-0">Request to book</h3>
+        </div>
+
+        <div class="row g-5">
+            <!-- Left Column: Dates, Guests, and Submission Form -->
+            <div class="col-lg-7">
+                <form asp-action="Create" method="post" id="bookingForm">
+                    <input type="hidden" asp-for="PropertyId" />
+                    <input type="hidden" id="pricePerNight" value="@Model.PricePerNight" />
+                    <input type="hidden" id="cleaningFee" value="@Model.CleaningFee" />
+                    <input type="hidden" id="serviceFee" value="@Model.ServiceFee" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <!-- Trip Details Card -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h5 class="fw-bold text-charcoal mb-3">Your Trip</h5>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label asp-for="CheckInDate" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="CheckInDate" type="date" class="form-control" id="checkInDate" onchange="recalculatePrice()" required />
+                                <span asp-validation-for="CheckInDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label asp-for="CheckOutDate" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="CheckOutDate" type="date" class="form-control" id="checkOutDate" onchange="recalculatePrice()" required />
+                                <span asp-validation-for="CheckOutDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="GuestCount" class="form-label small fw-semibold text-charcoal"></label>
+                            <select asp-for="GuestCount" class="form-select" id="guestCount">
+                                @for (int g = 1; g <= Model.MaxGuests; g++)
+                                {
+                                    <option value="@g">@g @(g == 1 ? "traveler" : "travelers")</option>
+                                }
+                            </select>
+                            <span asp-validation-for="GuestCount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-0">
+                            <label asp-for="SpecialRequests" class="form-label small fw-semibold text-charcoal"></label>
+                            <textarea asp-for="SpecialRequests" rows="3" class="form-control" placeholder="Share a few words about your trip or arrival plans with the host..."></textarea>
+                            <span asp-validation-for="SpecialRequests" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Ground Rules & Policies -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h5 class="fw-bold text-charcoal mb-2">Ground Rules</h5>
+                        <p class="small text-slate mb-3">By booking, you agree to treat the host's property with respect and follow house rules.</p>
+                        <ul class="list-unstyled small text-slate d-flex flex-column gap-2 mb-0">
+                            <li><i class="bi bi-check2 text-success me-2"></i>Follow the host's check-in schedule</li>
+                            <li><i class="bi bi-check2 text-success me-2"></i>Upload ID or Passport verification prior to arrival</li>
+                            <li><i class="bi bi-check2 text-success me-2"></i>Observe quiet hours and property guest limits</li>
+                        </ul>
+                    </div>
+
+                    <!-- Payment Terms & Submission Button -->
+                    <div class="mb-3">
+                        <p class="small text-muted mb-3" style="font-size: 0.8rem;">
+                            Your reservation will be sent to the host for review. Once confirmed, payment is completed and digital check-in documents are unlocked.
+                        </p>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary-baby btn-lg py-3 fw-semibold">
+                                Confirm & Request to Book
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column: Property Summary Card & Dynamic Price Breakdown -->
+            <div class="col-lg-5">
+                <div class="booking-floating-card p-4">
+                    <!-- Property Header -->
+                    <div class="d-flex gap-3 mb-4 pb-3 border-bottom">
+                        <img src="@Model.CoverImageUrl" alt="@Model.PropertyTitle" class="rounded-3 object-fit-cover" style="width: 110px; height: 90px;" />
+                        <div>
+                            <span class="small text-slate fw-semibold">@Model.PropertyType &middot; @Model.PropertyCity</span>
+                            <h6 class="fw-bold text-charcoal mb-1 text-truncate" style="max-width: 200px;">@Model.PropertyTitle</h6>
+                            <div class="text-slate small">Up to @Model.MaxGuests guests</div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Breakdown -->
+                    <h6 class="fw-bold text-charcoal mb-3">Price Details</h6>
+                    <div class="d-flex flex-column gap-2 small mb-3">
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span id="priceFormulaLabel">$@Model.PricePerNight.ToString("F0") x @Model.Nights nights</span>
+                            <span id="subtotalDisplay" class="fw-semibold">$@Model.NightlySubtotal.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Cleaning fee</span>
+                            <span class="fw-semibold">$@Model.CleaningFee.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-charcoal">
+                            <span>Staybnb service fee</span>
+                            <span class="fw-semibold">$@Model.ServiceFee.ToString("F2")</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top border-dark-subtle">
+                        <strong class="text-charcoal fs-5">Total (USD)</strong>
+                        <strong class="text-charcoal fs-5" id="totalPriceDisplay">$@Model.TotalPrice.ToString("F2")</strong>
+                    </div>
+
+                    <div class="mt-3 p-2 bg-pearl rounded-3 border text-center small text-slate">
+                        <i class="bi bi-shield-lock me-1" style="color: var(--primary-blue);"></i>
+                        Free cancellation within 48 hours of booking
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function recalculatePrice() {
+            const checkInInput = document.getElementById('checkInDate').value;
+            const checkOutInput = document.getElementById('checkOutDate').value;
+            const pricePerNight = parseFloat(document.getElementById('pricePerNight').value) || 0;
+            const cleaningFee = parseFloat(document.getElementById('cleaningFee').value) || 0;
+            const serviceFee = parseFloat(document.getElementById('serviceFee').value) || 0;
+
+            if (checkInInput && checkOutInput) {
+                const start = new Date(checkInInput);
+                const end = new Date(checkOutInput);
+                const diffTime = end - start;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const nights = diffDays > 0 ? diffDays : 1;
+
+                const subtotal = pricePerNight * nights;
+                const total = subtotal + cleaningFee + serviceFee;
+
+                document.getElementById('priceFormulaLabel').innerText = `$${pricePerNight.toFixed(0)} x ${nights} ${nights === 1 ? 'night' : 'nights'}`;
+                document.getElementById('subtotalDisplay').innerText = `$${subtotal.toFixed(2)}`;
+                document.getElementById('totalPriceDisplay').innerText = `$${total.toFixed(2)}`;
+            }
+        }
+    </script>
+}
