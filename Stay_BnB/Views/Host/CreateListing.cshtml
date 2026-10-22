@@ -1,0 +1,171 @@
+@model Stay_BnB.ViewModels.Host.CreateListingViewModel
+@{
+    ViewData["Title"] = "Add New Listing";
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <!-- Back navigation -->
+            <div class="mb-3">
+                <a asp-action="Listings" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to Listings
+                </a>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5" style="background-color: var(--bg-white);">
+                <div class="mb-4">
+                    <span class="badge badge-blue px-3 py-1 mb-2">New Property</span>
+                    <h2 class="h3 fw-bold text-charcoal m-0">Create Property Listing</h2>
+                    <p class="text-slate small m-0">Publish a new space on Staybnb to start welcoming guests from around the world.</p>
+                </div>
+
+                <form asp-action="CreateListing" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small"></div>
+
+                    <!-- 1. Basics -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">1. Listing Basics</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label small fw-semibold text-charcoal"></label>
+                            <input asp-for="Title" class="form-control rounded-3" placeholder="e.g. Modern Oceanfront Loft in Camps Bay" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label small fw-semibold text-charcoal"></label>
+                            <textarea asp-for="Description" rows="4" class="form-control rounded-3" placeholder="Describe the space, atmosphere, and neighborhood..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="PropertyType" class="form-label small fw-semibold text-charcoal"></label>
+                                <select asp-for="PropertyType" class="form-select rounded-3">
+                                    <option value="Apartment">Apartment</option>
+                                    <option value="House">House</option>
+                                    <option value="Villa">Villa</option>
+                                    <option value="Cottage">Cottage</option>
+                                    <option value="Cabin">Cabin</option>
+                                    <option value="Loft">Loft</option>
+                                </select>
+                                <span asp-validation-for="PropertyType" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="MaxGuests" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="MaxGuests" type="number" min="1" max="30" class="form-control rounded-3" />
+                                <span asp-validation-for="MaxGuests" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Location -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">2. Location</h5>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label asp-for="Address" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="Address" class="form-control rounded-3" placeholder="e.g. 14 Ocean View Drive" />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="City" class="form-label small fw-semibold text-charcoal"></label>
+                                <input asp-for="City" class="form-control rounded-3" placeholder="e.g. Cape Town" />
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Pricing -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">3. Pricing</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="PricePerNight" class="form-label small fw-semibold text-charcoal"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="PricePerNight" type="number" step="0.01" class="form-control rounded-end-3" />
+                                </div>
+                                <span asp-validation-for="PricePerNight" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="CleaningFee" class="form-label small fw-semibold text-charcoal"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="CleaningFee" type="number" step="0.01" class="form-control rounded-end-3" />
+                                </div>
+                                <span asp-validation-for="CleaningFee" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ServiceFee" class="form-label small fw-semibold text-charcoal"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="ServiceFee" type="number" step="0.01" class="form-control rounded-end-3" />
+                                </div>
+                                <span asp-validation-for="ServiceFee" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Amenities -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">4. Amenities</h5>
+                        <div class="row g-2">
+                            @foreach (var amenity in Model.AvailableAmenities)
+                            {
+                                <div class="col-6 col-md-4">
+                                    <div class="form-check p-2 border rounded-3 h-100 d-flex align-items-center">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" name="SelectedAmenityIds" value="@amenity.Id" id="amenity-@amenity.Id" />
+                                        <label class="form-check-label text-charcoal small" for="amenity-@amenity.Id">
+                                            <i class="@amenity.IconClass text-slate me-1"></i>@amenity.Name
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- 5. Check-in Process -->
+                    <div class="border-bottom pb-4 mb-4">
+                        <h5 class="fw-bold text-charcoal mb-3">5. Check-in Procedure</h5>
+                        <div class="mb-3">
+                            <label asp-for="CheckInTitle" class="form-label small fw-semibold text-charcoal"></label>
+                            <input asp-for="CheckInTitle" class="form-control rounded-3" />
+                            <span asp-validation-for="CheckInTitle" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CheckInInstructions" class="form-label small fw-semibold text-charcoal"></label>
+                            <textarea asp-for="CheckInInstructions" rows="3" class="form-control rounded-3"></textarea>
+                            <span asp-validation-for="CheckInInstructions" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- 6. Photos (Mandatory) -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-charcoal mb-1">6. Property Photos</h5>
+                        <p class="text-slate small mb-3">At least one high quality photo is required to publish a property.</p>
+
+                        <div class="p-4 border border-2 border-dashed rounded-4 text-center" style="background-color: var(--bg-pearl);">
+                            <i class="bi bi-cloud-arrow-up fs-1 text-slate mb-2"></i>
+                            <div class="fw-semibold text-charcoal small mb-1">Choose photos to upload</div>
+                            <div class="text-slate small mb-3">PNG, JPG, or WEBP up to 10MB each</div>
+                            <input asp-for="Photos" type="file" multiple accept="image/*" class="form-control rounded-3 mx-auto" style="max-width: 400px;" />
+                            <span asp-validation-for="Photos" class="text-danger small d-block mt-2"></span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a asp-action="Listings" class="btn btn-light rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary-baby rounded-pill px-5 text-white">
+                            Publish Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

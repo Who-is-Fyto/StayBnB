@@ -1,0 +1,144 @@
+@model Stay_BnB.ViewModels.Host.HostListingsViewModel
+@{
+    ViewData["Title"] = "Manage Listings";
+}
+
+<div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a asp-action="Index" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">My Property Listings</h1>
+            <p class="text-slate small m-0">Manage details, marketplace visibility, and photography for all your properties.</p>
+        </div>
+        <a asp-action="CreateListing" class="btn btn-primary-baby rounded-pill px-3 py-2 small">
+            <i class="bi bi-plus-circle me-1"></i>Add New Listing
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Listings Grid / List -->
+    @if (!Model.Properties.Any())
+    {
+        <div class="card border-0 rounded-4 p-5 text-center shadow-sm" style="background-color: var(--bg-white);">
+            <div class="text-slate mb-3"><i class="bi bi-house-door fs-1 text-muted"></i></div>
+            <h4 class="fw-bold text-charcoal">No properties found</h4>
+            <p class="text-slate small mb-4">You have not published any properties yet. Create your first listing to start hosting guests.</p>
+            <div>
+                <a asp-action="CreateListing" class="btn btn-primary-baby rounded-pill px-4 py-2">
+                    <i class="bi bi-plus-circle me-1"></i>Add Your First Listing
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var property in Model.Properties)
+            {
+                var coverImage = property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                    ?? property.Images.FirstOrDefault()?.ImageUrl 
+                    ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+                
+                var avgRating = property.Reviews.Any() ? property.Reviews.Average(r => r.Rating).ToString("0.0") : "New";
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card border-0 rounded-4 shadow-sm overflow-hidden h-100 property-card-host" style="background-color: var(--bg-white);">
+                        <!-- Image Container with Badges -->
+                        <div class="position-relative" style="height: 200px; overflow: hidden;">
+                            <img src="@coverImage" alt="@property.Title" class="w-100 h-100 object-fit-cover" />
+                            
+                            <!-- Visibility Pill Top Left -->
+                            <div class="position-absolute top-0 start-0 m-3">
+                                @if (property.IsActive)
+                                {
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: rgba(22, 163, 74, 0.9); font-size: 0.75rem;">
+                                        <i class="bi bi-eye-fill me-1"></i>Active in Search
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: rgba(220, 38, 38, 0.9); font-size: 0.75rem;">
+                                        <i class="bi bi-eye-slash-fill me-1"></i>Hidden
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Rating Top Right -->
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-white text-charcoal rounded-pill px-2 py-1 shadow-sm small">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>@avgRating
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h5 class="fw-bold text-charcoal m-0 text-truncate" title="@property.Title">@property.Title</h5>
+                                </div>
+                                <div class="text-slate small mb-2">@property.Address, @property.City</div>
+                                
+                                <div class="d-flex align-items-center gap-3 text-slate small mb-3">
+                                    <span><i class="bi bi-people me-1"></i>Up to @property.MaxGuests guests</span>
+                                    <span>&bull;</span>
+                                    <span><i class="bi bi-images me-1"></i>@property.Images.Count photo@(property.Images.Count != 1 ? "s" : "")</span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span class="h5 fw-bold text-charcoal">$@property.PricePerNight.ToString("N0")</span>
+                                    <span class="text-slate small">/ night</span>
+                                    <span class="text-slate small ms-2">(+$@property.CleaningFee.ToString("N0") cleaning)</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="border-top pt-3 d-flex flex-column gap-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <form asp-action="ToggleActive" asp-route-id="@property.Id" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm @(property.IsActive ? "btn-outline-secondary" : "btn-outline-success") rounded-pill px-3 py-1" style="font-size: 0.8rem;">
+                                            <i class="bi @(property.IsActive ? "bi-eye-slash" : "bi-eye") me-1"></i>
+                                            @(property.IsActive ? "Hide Listing" : "Publish Listing")
+                                        </button>
+                                    </form>
+
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="EditListing" asp-route-id="@property.Id" class="btn btn-sm btn-light border rounded-circle p-2" title="Edit Listing Details">
+                                            <i class="bi bi-pencil text-slate"></i>
+                                        </a>
+                                        <a asp-action="ManageImages" asp-route-id="@property.Id" class="btn btn-sm btn-light border rounded-circle p-2" title="Manage Photos">
+                                            <i class="bi bi-images text-slate"></i>
+                                        </a>
+                                        <a asp-controller="Properties" asp-action="Details" asp-route-id="@property.Id" target="_blank" class="btn btn-sm btn-light border rounded-circle p-2" title="View in Marketplace">
+                                            <i class="bi bi-box-arrow-up-right text-slate"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

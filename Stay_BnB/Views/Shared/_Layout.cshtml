@@ -67,9 +67,9 @@
                     {
                         <!-- Host Navigation Links -->
                         <span class="badge badge-blue px-2 py-1 small me-1">Host Mode</span>
-                        <a href="#host-dashboard" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Dashboard</a>
-                        <a href="#my-properties" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">My Listings</a>
-                        <a href="#reservations" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Reservations</a>
+                        <a asp-controller="Host" asp-action="Index" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Dashboard</a>
+                        <a asp-controller="Host" asp-action="Listings" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">My Listings</a>
+                        <a asp-controller="Host" asp-action="Reservations" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Reservations</a>
                     }
                     else if (isAdmin || isSuperAdmin)
                     {
@@ -120,8 +120,9 @@
                             }
                             else if (isHost)
                             {
-                                <li><a class="dropdown-item py-2" href="#host-dashboard"><i class="bi bi-speedometer2 me-2"></i>Host Dashboard</a></li>
-                                <li><a class="dropdown-item py-2" href="#my-properties"><i class="bi bi-houses me-2"></i>Manage Listings</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="Host" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>Host Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="Host" asp-action="Listings"><i class="bi bi-houses me-2"></i>Manage Listings</a></li>
+                                <li><a class="dropdown-item py-2" asp-controller="Host" asp-action="Reservations"><i class="bi bi-calendar-check me-2"></i>Reservations</a></li>
                             }
                             else if (isAdmin || isSuperAdmin)
                             {

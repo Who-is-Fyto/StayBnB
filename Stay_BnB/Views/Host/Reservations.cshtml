@@ -1,0 +1,215 @@
+@model Stay_BnB.ViewModels.Host.HostReservationsViewModel
+@using Stay_BnB.Models.Enums
+@{
+    ViewData["Title"] = "Reservations Hub";
+}
+
+<div class="container py-3">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a asp-action="Index" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">Reservations Center</h1>
+            <p class="text-slate small m-0">Review pending requests, manage confirmed bookings, and monitor guest schedules.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-info-circle-fill me-2"></i>@TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Status Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 overflow-x-auto pb-1">
+        <a asp-action="Reservations" asp-route-status="All" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "All" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            All (@Model.TotalCount)
+        </a>
+        <a asp-action="Reservations" asp-route-status="Pending" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "Pending" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Pending (@Model.PendingCount)
+        </a>
+        <a asp-action="Reservations" asp-route-status="Approved" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "Approved" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Confirmed (@Model.ApprovedCount)
+        </a>
+        <a asp-action="Reservations" asp-route-status="Completed" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "Completed" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Completed (@Model.CompletedCount)
+        </a>
+        <a asp-action="Reservations" asp-route-status="Cancelled" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "Cancelled" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Cancelled (@Model.CancelledCount)
+        </a>
+        <a asp-action="Reservations" asp-route-status="Rejected" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentStatusFilter == "Rejected" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Declined (@Model.RejectedCount)
+        </a>
+    </div>
+
+    <!-- Reservations Table / List -->
+    @if (!Model.Reservations.Any())
+    {
+        <div class="card border-0 rounded-4 p-5 text-center shadow-sm" style="background-color: var(--bg-white);">
+            <div class="text-slate mb-3"><i class="bi bi-calendar2-x fs-1 text-muted"></i></div>
+            <h4 class="fw-bold text-charcoal">No reservations found</h4>
+            <p class="text-slate small m-0">There are no @(Model.CurrentStatusFilter == "All" ? "" : Model.CurrentStatusFilter.ToLower()) bookings for your properties.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background-color: var(--bg-white);">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="text-slate small">
+                            <th>Guest</th>
+                            <th>Listing</th>
+                            <th>Stay Dates</th>
+                            <th>Guests</th>
+                            <th>Financials</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var res in Model.Reservations)
+                        {
+                            int nights = (int)(res.CheckOutDate - res.CheckInDate).TotalDays;
+                            var coverImg = res.Property?.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                                ?? res.Property?.Images.FirstOrDefault()?.ImageUrl 
+                                ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80";
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar-bubble" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                                            @(string.IsNullOrEmpty(res.Guest?.FirstName) ? "G" : res.Guest.FirstName.Substring(0, 1))
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-charcoal small">@res.Guest?.FullName</div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@res.Guest?.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="@coverImg" alt="@res.Property?.Title" class="rounded-2 object-fit-cover" style="width: 44px; height: 34px;" />
+                                        <div>
+                                            <div class="fw-semibold text-charcoal small text-truncate" style="max-width: 180px;">@res.Property?.Title</div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@res.Property?.City</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-charcoal">@res.CheckInDate.ToString("MMM dd") - @res.CheckOutDate.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-slate" style="font-size: 0.75rem;">@nights night@(nights > 1 ? "s" : "")</div>
+                                </td>
+                                <td>
+                                    <span class="small text-charcoal">@res.GuestCount guest@(res.GuestCount > 1 ? "s" : "")</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-charcoal small">$@res.TotalPrice.ToString("N2")</div>
+                                    <div class="text-slate" style="font-size: 0.75rem;">Payment: @res.Payment?.Status.ToString()</div>
+                                </td>
+                                <td>
+                                    @switch (res.Status)
+                                    {
+                                        case BookingStatus.Pending:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: var(--accent-pink-light); color: var(--accent-pink);">
+                                                <i class="bi bi-clock-history me-1"></i>Pending
+                                            </span>
+                                            break;
+                                        case BookingStatus.Approved:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #DCFCE7; color: #16A34A;">
+                                                <i class="bi bi-check2-circle me-1"></i>Confirmed
+                                            </span>
+                                            break;
+                                        case BookingStatus.Completed:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #EDE9FE; color: #8B5CF6;">
+                                                <i class="bi bi-trophy me-1"></i>Completed
+                                            </span>
+                                            break;
+                                        case BookingStatus.Cancelled:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #F1F5F9; color: #64748B;">
+                                                <i class="bi bi-x-circle me-1"></i>Cancelled
+                                            </span>
+                                            break;
+                                        case BookingStatus.Rejected:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #FEE2E2; color: #DC2626;">
+                                                <i class="bi bi-slash-circle me-1"></i>Declined
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (res.Status == BookingStatus.Pending)
+                                    {
+                                        <div class="d-inline-flex gap-1">
+                                            <form asp-action="ApproveReservation" asp-route-id="@res.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-primary-baby rounded-pill px-3 py-1 text-white">
+                                                    Approve
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#resDeclineModal-@res.Id">
+                                                Decline
+                                            </button>
+                                        </div>
+
+                                        <!-- Decline Modal -->
+                                        <div class="modal fade text-start" id="resDeclineModal-@res.Id" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content rounded-4 border-0 shadow">
+                                                    <div class="modal-header border-0 pb-0">
+                                                        <h5 class="modal-title fw-bold text-charcoal">Decline Reservation</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form asp-action="RejectReservation" asp-route-id="@res.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <div class="modal-body py-3">
+                                                            <p class="text-slate small mb-3">
+                                                                Are you sure you want to decline the reservation for <strong>@res.Property?.Title</strong> from <strong>@res.Guest?.FullName</strong>?
+                                                            </p>
+                                                            <div class="mb-3">
+                                                                <label class="form-label small fw-semibold text-charcoal">Reason for decline (Optional)</label>
+                                                                <textarea name="reason" rows="2" class="form-control rounded-3" placeholder="e.g. Property unavailable for selected dates..."></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer border-0 pt-0">
+                                                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">Confirm Decline</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-slate small">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
