@@ -1,0 +1,197 @@
+@model Stay_BnB.ViewModels.Admin.UserManagementViewModel
+@{
+    ViewData["Title"] = "SuperAdmin User Governance";
+    var currentRole = Model.RoleFilter ?? "All";
+}
+
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger">SuperAdmin Exclusive</span>
+            </div>
+            <h3 class="fw-bold text-charcoal mb-0">Platform User Governance</h3>
+            <span class="text-slate small">Inspect accounts, audit user roles, and promote qualified guests to administrators</span>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-shield-check me-1"></i>Admin Command Center
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Role Summary Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm text-center">
+                <div class="text-slate small fw-semibold text-uppercase">Total Users</div>
+                <div class="fs-3 fw-bold text-charcoal">@Model.TotalUsers</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm text-center">
+                <div class="text-slate small fw-semibold text-uppercase">Guests (Eligible)</div>
+                <div class="fs-3 fw-bold text-charcoal">@Model.GuestCount</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm text-center">
+                <div class="text-slate small fw-semibold text-uppercase">Active Hosts</div>
+                <div class="fs-3 fw-bold" style="color: var(--primary-blue);">@Model.HostCount</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm text-center">
+                <div class="text-slate small fw-semibold text-uppercase">Platform Admins</div>
+                <div class="fs-3 fw-bold" style="color: var(--accent-pink);">@Model.AdminCount</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+        <div class="p-3 bg-pearl border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <!-- Role Filter Pills -->
+            <ul class="nav nav-pills gap-2 mb-0">
+                <li class="nav-item">
+                    <a asp-action="Users" asp-route-roleFilter="All" asp-route-search="@Model.SearchTerm" class="nav-link rounded-pill py-1 px-3 small @(currentRole.Equals("All", StringComparison.OrdinalIgnoreCase) ? "active bg-dark" : "text-slate bg-white border")">All</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Users" asp-route-roleFilter="Guest" asp-route-search="@Model.SearchTerm" class="nav-link rounded-pill py-1 px-3 small @(currentRole.Equals("Guest", StringComparison.OrdinalIgnoreCase) ? "active bg-secondary" : "text-slate bg-white border")">Guests</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Users" asp-route-roleFilter="Host" asp-route-search="@Model.SearchTerm" class="nav-link rounded-pill py-1 px-3 small @(currentRole.Equals("Host", StringComparison.OrdinalIgnoreCase) ? "active bg-info text-white" : "text-slate bg-white border")">Hosts</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Users" asp-route-roleFilter="Admin" asp-route-search="@Model.SearchTerm" class="nav-link rounded-pill py-1 px-3 small @(currentRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ? "active bg-dark" : "text-slate bg-white border")">Admins</a>
+                </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form asp-action="Users" method="get" class="d-flex gap-2">
+                <input type="hidden" name="roleFilter" value="@Model.RoleFilter" />
+                <input type="text" name="search" value="@Model.SearchTerm" class="form-control form-control-sm" placeholder="Search by name or email..." style="width: 240px;" />
+                <button type="submit" class="btn btn-sm btn-dark px-3">Search</button>
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <a asp-action="Users" asp-route-roleFilter="@Model.RoleFilter" class="btn btn-sm btn-outline-secondary">Reset</a>
+                }
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-slate">
+                    <tr>
+                        <th>User</th>
+                        <th>Current Role</th>
+                        <th>Registered</th>
+                        <th>Hosted Properties</th>
+                        <th>Trips / Bookings</th>
+                        <th class="text-end">Administrative Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Users.Any())
+                    {
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar-bubble" style="width: 36px; height: 36px;">
+                                            @(string.IsNullOrEmpty(user.FullName) ? "U" : user.FullName.Substring(0, 1))
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-charcoal small">@user.FullName</div>
+                                            <div class="text-slate" style="font-size: 0.75rem;">@user.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (user.Role == "SuperAdmin")
+                                    {
+                                        <span class="badge bg-danger">SuperAdmin</span>
+                                    }
+                                    else if (user.Role == "Admin")
+                                    {
+                                        <span class="badge bg-dark">Admin</span>
+                                    }
+                                    else if (user.Role == "Host")
+                                    {
+                                        <span class="badge badge-blue">Host</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Guest</span>
+                                    }
+                                </td>
+                                <td class="small text-slate">@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td class="small text-charcoal">@user.PropertiesCount</td>
+                                <td class="small text-charcoal">@user.BookingsCount</td>
+                                <td class="text-end">
+                                    @if (user.Role == "Guest")
+                                    {
+                                        <!-- SuperAdmin Promotion Action: Promote Guest to Admin -->
+                                        <form asp-action="PromoteToAdmin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-primary-baby py-1 px-3" onclick="return confirm('Promote guest @user.FullName to Admin role?');">
+                                                <i class="bi bi-shield-plus me-1"></i>Promote to Admin
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (user.Role == "Admin")
+                                    {
+                                        <!-- Revoke Admin Action -->
+                                        <form asp-action="RevokeAdmin" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="return confirm('Revoke Admin privileges from @user.FullName?');">
+                                                Revoke Admin
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (user.Role == "Host")
+                                    {
+                                        <span class="text-slate small fst-italic">Host account</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Root Owner</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-slate small">
+                                No users match the current search or role filter criteria.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -79,7 +79,7 @@
                         <a asp-controller="Admin" asp-action="Applications" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Applications</a>
                         @if (isSuperAdmin)
                         {
-                            <a href="#superadmin-users" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Users</a>
+                            <a asp-controller="SuperAdmin" asp-action="Users" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Users</a>
                         }
                         <a href="#audit-logs" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Audit Logs</a>
                     }
@@ -127,6 +127,10 @@
                             {
                                 <li><a class="dropdown-item py-2" asp-controller="Admin" asp-action="Index"><i class="bi bi-shield-check me-2"></i>Admin Dashboard</a></li>
                                 <li><a class="dropdown-item py-2" asp-controller="Admin" asp-action="Applications"><i class="bi bi-file-earmark-text me-2"></i>Applications</a></li>
+                                @if (isSuperAdmin)
+                                {
+                                    <li><a class="dropdown-item py-2" asp-controller="SuperAdmin" asp-action="Users"><i class="bi bi-people me-2"></i>User Governance</a></li>
+                                }
                             }
                             <li><hr class="dropdown-divider"></li>
                             <li>
