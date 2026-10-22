@@ -1,0 +1,100 @@
+@model Stay_BnB.ViewModels.Communication.MessagesInboxViewModel
+@{
+    ViewData["Title"] = "Messages";
+}
+
+<div class="container py-3">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-blue px-3 py-1">Inbox</span>
+                @if (Model.TotalUnread > 0)
+                {
+                    <span class="badge rounded-pill px-2 py-1" style="background-color: var(--accent-pink); color: white;">
+                        @Model.TotalUnread unread
+                    </span>
+                }
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">Messages & Conversations</h1>
+            <p class="text-slate small m-0">Chat directly with hosts and guests about listings, reservations, and arrival plans.</p>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Conversation Threads List -->
+    @if (!Model.Threads.Any())
+    {
+        <div class="card border-0 rounded-4 p-5 text-center shadow-sm" style="background-color: var(--bg-white);">
+            <div class="text-slate mb-3"><i class="bi bi-chat-square-dots fs-1 text-muted"></i></div>
+            <h4 class="fw-bold text-charcoal">No messages yet</h4>
+            <p class="text-slate small mb-4">When you reach out to a host or receive booking inquiries, your conversations will appear here.</p>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby rounded-pill px-4 py-2">
+                    Explore Properties
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background-color: var(--bg-white);">
+            <div class="list-group list-group-flush">
+                @foreach (var thread in Model.Threads)
+                {
+                    <a asp-action="Conversation" asp-route-userId="@thread.OtherUserId" asp-route-propertyId="@thread.PropertyId" class="list-group-item list-group-item-action p-3 p-md-4 border-bottom d-flex align-items-center justify-content-between gap-3 @(thread.UnreadCount > 0 ? "bg-pearl" : "")" style="transition: background-color 200ms ease;">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
+                            <!-- Avatar Bubble -->
+                            <div class="user-avatar-bubble flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.1rem;">
+                                @(string.IsNullOrEmpty(thread.OtherUserName) ? "U" : thread.OtherUserName.Substring(0, 1))
+                            </div>
+
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <h6 class="fw-bold text-charcoal m-0 text-truncate">@thread.OtherUserName</h6>
+                                    @if (thread.UnreadCount > 0)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-0" style="background-color: var(--accent-pink); color: white; font-size: 0.7rem;">
+                                            @thread.UnreadCount new
+                                        </span>
+                                    }
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(thread.PropertyTitle))
+                                {
+                                    <div class="text-slate small mb-1 text-truncate" style="font-size: 0.8rem;">
+                                        <i class="bi bi-house-door me-1"></i>@thread.PropertyTitle
+                                    </div>
+                                }
+
+                                <div class="text-slate small text-truncate @(thread.UnreadCount > 0 ? "fw-bold text-charcoal" : "")" style="max-width: 500px;">
+                                    @thread.LastMessage
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right details: Property thumbnail & timestamp -->
+                        <div class="d-flex align-items-center gap-3 flex-shrink-0 text-end">
+                            <span class="text-slate small" style="font-size: 0.75rem;">
+                                @thread.LastMessageTimestamp.ToString("MMM dd, HH:mm")
+                            </span>
+
+                            @if (!string.IsNullOrWhiteSpace(thread.PropertyImage))
+                            {
+                                <img src="@thread.PropertyImage" alt="@thread.PropertyTitle" class="rounded-3 object-fit-cover d-none d-sm-block" style="width: 50px; height: 50px;" />
+                            }
+                            <i class="bi bi-chevron-right text-slate small"></i>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>

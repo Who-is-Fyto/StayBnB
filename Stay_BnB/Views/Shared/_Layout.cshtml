@@ -1,7 +1,10 @@
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Stay_BnB.Data
 @using Stay_BnB.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
 
 <!DOCTYPE html>
 <html lang="en">
@@ -48,6 +51,8 @@
                 @if (SignInManager.IsSignedIn(User))
                 {
                     var currentUser = await UserManager.GetUserAsync(User);
+                    var unreadNotifications = currentUser != null ? await DbContext.Notifications.CountAsync(n => n.UserId == currentUser.Id && !n.IsRead) : 0;
+                    var unreadMessages = currentUser != null ? await DbContext.Messages.CountAsync(m => m.ReceiverId == currentUser.Id && !m.IsRead) : 0;
                     var isSuperAdmin = User.IsInRole("SuperAdmin");
                     var isAdmin = User.IsInRole("Admin");
                     var isHost = User.IsInRole("Host");
@@ -84,17 +89,26 @@
                         <a href="#audit-logs" class="btn btn-sm btn-link text-decoration-none text-slate d-none d-lg-inline-block">Audit Logs</a>
                     }
 
-                    <!-- Notifications Icon with Light Pink Badge -->
-                    <a href="#notifications" class="btn btn-sm btn-light border position-relative rounded-circle p-2 ms-1" title="Notifications">
+                    <!-- Notifications Icon with Unread Badge -->
+                    <a asp-controller="Notifications" asp-action="Index" class="btn btn-sm btn-light border position-relative rounded-circle p-2 ms-1" title="Notifications">
                         <i class="bi bi-bell text-slate"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-pink border border-light rounded-circle" style="background-color: var(--accent-pink); width: 10px; height: 10px;">
-                            <span class="visually-hidden">New alerts</span>
-                        </span>
+                        @if (unreadNotifications > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-white" style="background-color: var(--accent-pink) !important; font-size: 0.65rem;">
+                                @unreadNotifications
+                            </span>
+                        }
                     </a>
 
-                    <!-- Messages Icon -->
-                    <a href="#messages" class="btn btn-sm btn-light border rounded-circle p-2 ms-1" title="Messages">
+                    <!-- Messages Icon with Unread Badge -->
+                    <a asp-controller="Messages" asp-action="Index" class="btn btn-sm btn-light border position-relative rounded-circle p-2 ms-1" title="Messages">
                         <i class="bi bi-chat-dots text-slate"></i>
+                        @if (unreadMessages > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-white" style="background-color: var(--accent-pink) !important; font-size: 0.65rem;">
+                                @unreadMessages
+                            </span>
+                        }
                     </a>
 
                     <!-- Account Dropdown Menu -->
@@ -111,6 +125,8 @@
                                 <div class="text-slate small" style="font-size: 0.8rem;">@currentUser?.Email</div>
                             </li>
                             <li><a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item py-2" asp-controller="Messages" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Messages @(unreadMessages > 0 ? $"({unreadMessages})" : "")</a></li>
+                            <li><a class="dropdown-item py-2" asp-controller="Notifications" asp-action="Index"><i class="bi bi-bell me-2"></i>Notifications @(unreadNotifications > 0 ? $"({unreadNotifications})" : "")</a></li>
                             @if (isGuest)
                             {
                                 <li><a class="dropdown-item py-2" href="#wishlist"><i class="bi bi-heart me-2"></i>Wishlist</a></li>

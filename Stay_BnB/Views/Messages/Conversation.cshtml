@@ -1,0 +1,120 @@
+@model Stay_BnB.ViewModels.Communication.ConversationDetailViewModel
+@{
+    ViewData["Title"] = "Chat with " + Model.OtherUserName;
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+            <!-- Back button -->
+            <div class="mb-3">
+                <a asp-action="Index" class="text-decoration-none text-slate small">
+                    <i class="bi bi-chevron-left me-1"></i>Back to Messages
+                </a>
+            </div>
+
+            <!-- Chat Window Container -->
+            <div class="card border-0 rounded-4 shadow-sm overflow-hidden d-flex flex-column" style="background-color: var(--bg-white); height: 80vh;">
+                <!-- Conversation Header -->
+                <div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="user-avatar-bubble" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                            @(string.IsNullOrEmpty(Model.OtherUserName) ? "U" : Model.OtherUserName.Substring(0, 1))
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-charcoal m-0">@Model.OtherUserName</h6>
+                            <span class="text-slate small" style="font-size: 0.8rem;">@Model.OtherUserEmail</span>
+                        </div>
+                    </div>
+
+                    @if (Model.Property != null)
+                    {
+                        var cover = Model.Property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                            ?? Model.Property.Images.FirstOrDefault()?.ImageUrl;
+
+                        <a asp-controller="Properties" asp-action="Details" asp-route-id="@Model.Property.Id" target="_blank" class="d-none d-sm-flex align-items-center gap-2 text-decoration-none p-2 rounded-3 border bg-pearl">
+                            @if (!string.IsNullOrWhiteSpace(cover))
+                            {
+                                <img src="@cover" alt="@Model.Property.Title" class="rounded-2 object-fit-cover" style="width: 36px; height: 36px;" />
+                            }
+                            <div class="text-start">
+                                <div class="fw-semibold text-charcoal small text-truncate" style="max-width: 160px;">@Model.Property.Title</div>
+                                <div class="text-slate" style="font-size: 0.7rem;">$@Model.Property.PricePerNight.ToString("N0") / night</div>
+                            </div>
+                        </a>
+                    }
+                </div>
+
+                <!-- Messages Stream Area -->
+                <div class="card-body p-4 overflow-y-auto flex-grow-1" id="messageStream" style="background-color: var(--bg-pearl);">
+                    @if (!Model.Messages.Any())
+                    {
+                        <div class="text-center py-5">
+                            <div class="text-slate mb-2"><i class="bi bi-chat-heart fs-1 text-muted"></i></div>
+                            <div class="fw-semibold text-charcoal">Start the conversation</div>
+                            <div class="text-slate small">Say hello to @Model.OtherUserName to discuss dates, check-in, or property amenities.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var msg in Model.Messages)
+                            {
+                                bool isMine = msg.SenderId == Model.CurrentUserId;
+
+                                <div class="d-flex @(isMine ? "justify-content-end" : "justify-content-start")">
+                                    <div style="max-width: 75%;">
+                                        <div class="p-3 rounded-4 shadow-sm @(isMine ? "text-white" : "bg-white text-charcoal border")"
+                                             style="@(isMine ? "background-color: var(--primary-blue);" : "")">
+                                            <p class="m-0" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">@msg.Content</p>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1 mt-1 text-slate small px-2 @(isMine ? "justify-content-end" : "justify-content-start")" style="font-size: 0.7rem;">
+                                            <span>@msg.Timestamp.ToString("MMM dd, HH:mm")</span>
+                                            @if (isMine)
+                                            {
+                                                @if (msg.IsRead)
+                                                {
+                                                    <span class="text-primary ms-1" title="Read"><i class="bi bi-check2-all"></i> Read</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted ms-1" title="Sent"><i class="bi bi-check2"></i> Sent</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Sticky Reply Form -->
+                <div class="card-footer bg-white border-top p-3">
+                    <form asp-action="Send" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="receiverId" value="@Model.OtherUserId" />
+                        <input type="hidden" name="propertyId" value="@Model.Property?.Id" />
+
+                        <div class="input-group">
+                            <textarea name="content" rows="1" class="form-control rounded-pill px-3 py-2" placeholder="Type your message..." required style="resize: none;" id="replyInput"></textarea>
+                            <button type="submit" class="btn btn-primary-baby rounded-pill px-4 ms-2 text-white" id="sendBtn">
+                                <i class="bi bi-send-fill me-1"></i>Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll chat to bottom
+    document.addEventListener("DOMContentLoaded", function () {
+        var stream = document.getElementById("messageStream");
+        if (stream) {
+            stream.scrollTop = stream.scrollHeight;
+        }
+    });
+</script>

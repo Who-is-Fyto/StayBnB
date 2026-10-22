@@ -1,0 +1,177 @@
+@model Stay_BnB.ViewModels.Communication.NotificationsViewModel
+@using Stay_BnB.Models.Enums
+@{
+    ViewData["Title"] = "Notification Center";
+}
+
+<div class="container py-3">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-blue px-3 py-1">Alerts</span>
+                @if (Model.UnreadCount > 0)
+                {
+                    <span class="badge rounded-pill px-2 py-1" style="background-color: var(--accent-pink); color: white;">
+                        @Model.UnreadCount unread
+                    </span>
+                }
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">Notification Center</h1>
+            <p class="text-slate small m-0">Real-time alerts regarding booking updates, host decisions, messages, and check-in verifications.</p>
+        </div>
+
+        @if (Model.UnreadCount > 0)
+        {
+            <div>
+                <form asp-action="MarkAllAsRead" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-secondary rounded-pill px-3 py-2 small">
+                        <i class="bi bi-check2-all me-1"></i>Mark All as Read
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 overflow-x-auto pb-1">
+        <a asp-action="Index" asp-route-filter="All" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentFilter == "All" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            All (@Model.TotalCount)
+        </a>
+        <a asp-action="Index" asp-route-filter="Unread" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentFilter == "Unread" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Unread (@Model.UnreadCount)
+        </a>
+        <a asp-action="Index" asp-route-filter="Bookings" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentFilter == "Bookings" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Bookings
+        </a>
+        <a asp-action="Index" asp-route-filter="Messages" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentFilter == "Messages" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Messages
+        </a>
+        <a asp-action="Index" asp-route-filter="CheckIn" class="btn btn-sm rounded-pill px-3 py-2 @(Model.CurrentFilter == "CheckIn" ? "btn-dark text-white fw-semibold" : "btn-light text-slate border")">
+            Check-in
+        </a>
+    </div>
+
+    <!-- Notification Cards List -->
+    @if (!Model.Notifications.Any())
+    {
+        <div class="card border-0 rounded-4 p-5 text-center shadow-sm" style="background-color: var(--bg-white);">
+            <div class="text-slate mb-3"><i class="bi bi-bell-slash fs-1 text-muted"></i></div>
+            <h4 class="fw-bold text-charcoal">No notifications found</h4>
+            <p class="text-slate small m-0">You are all caught up with your @(Model.CurrentFilter == "All" ? "" : Model.CurrentFilter.ToLower()) alerts.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background-color: var(--bg-white);">
+            <div class="list-group list-group-flush">
+                @foreach (var n in Model.Notifications)
+                {
+                    <div class="list-group-item p-3 p-md-4 border-bottom d-flex align-items-center justify-content-between gap-3 @(!n.IsRead ? "bg-pearl" : "")" style="transition: background-color 200ms ease;">
+                        <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+                            <!-- Icon Bubble based on NotificationType -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1" style="width: 44px; height: 44px;
+                                @switch (n.Type)
+                                {
+                                    case NotificationType.BookingApproved:
+                                        @:background-color: #DCFCE7; color: #16A34A;
+                                        break;
+                                    case NotificationType.BookingRejected:
+                                        @:background-color: #FEE2E2; color: #DC2626;
+                                        break;
+                                    case NotificationType.NewBookingRequest:
+                                        @:background-color: var(--accent-pink-light); color: var(--accent-pink);
+                                        break;
+                                    case NotificationType.NewMessage:
+                                        @:background-color: var(--primary-blue-light); color: var(--primary-blue);
+                                        break;
+                                    case NotificationType.CheckInUpdate:
+                                        @:background-color: #FEF3C7; color: #D97706;
+                                        break;
+                                    default:
+                                        @:background-color: #F1F5F9; color: #64748B;
+                                        break;
+                                }">
+                                @switch (n.Type)
+                                {
+                                    case NotificationType.BookingApproved:
+                                        <i class="bi bi-shield-check fs-5"></i>
+                                        break;
+                                    case NotificationType.BookingRejected:
+                                        <i class="bi bi-x-circle fs-5"></i>
+                                        break;
+                                    case NotificationType.NewBookingRequest:
+                                        <i class="bi bi-calendar2-plus fs-5"></i>
+                                        break;
+                                    case NotificationType.NewMessage:
+                                        <i class="bi bi-chat-dots fs-5"></i>
+                                        break;
+                                    case NotificationType.CheckInUpdate:
+                                        <i class="bi bi-key fs-5"></i>
+                                        break;
+                                    default:
+                                        <i class="bi bi-bell fs-5"></i>
+                                        break;
+                                }
+                            </div>
+
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <h6 class="fw-bold text-charcoal m-0">@n.Title</h6>
+                                    @if (!n.IsRead)
+                                    {
+                                        <span class="badge rounded-pill px-2 py-0" style="background-color: var(--accent-pink); color: white; font-size: 0.65rem;">
+                                            New
+                                        </span>
+                                    }
+                                </div>
+                                <p class="text-slate small mb-2" style="font-size: 0.9rem;">@n.Message</p>
+                                <span class="text-slate" style="font-size: 0.75rem;">
+                                    <i class="bi bi-clock me-1"></i>@n.CreatedAt.ToString("MMM dd, yyyy HH:mm") UTC
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            @if (!string.IsNullOrWhiteSpace(n.TargetUrl))
+                            {
+                                <form asp-action="MarkAsRead" asp-route-id="@n.Id" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-primary-baby rounded-pill px-3 py-1 text-white">
+                                        View
+                                    </button>
+                                </form>
+                            }
+                            else if (!n.IsRead)
+                            {
+                                <form asp-action="MarkAsRead" asp-route-id="@n.Id" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-light border rounded-pill px-2 py-1 small" title="Mark as read">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                </form>
+                            }
+
+                            <form asp-action="Delete" asp-route-id="@n.Id" method="post" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-1" title="Delete notification">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
