@@ -12,4 +12,13 @@ public class PropertyDetailsViewModel
     public int ReviewCount { get; set; }
     public CheckInProcess? CheckInProcess { get; set; }
     public bool IsInWishlist { get; set; }
+    public bool CanUserReview { get; set; }
+    public bool HasUserReviewed { get; set; }
+}
+
+public class SubmitReviewViewModel
+{
+    public int PropertyId { get; set; }
+    public int Rating { get; set; } = 5;
+    public string Comment { get; set; } = string.Empty;
 }

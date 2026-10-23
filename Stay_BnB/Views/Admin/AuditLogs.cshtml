@@ -1,0 +1,232 @@
+@model Stay_BnB.ViewModels.Admin.AuditLogViewModel
+@using Stay_BnB.Models.Enums
+@{
+    ViewData["Title"] = "System Audit Logs";
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-dark px-3 py-1">Security & Governance</span>
+                <span class="text-slate small">System Audit Trail</span>
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">Platform Audit Logs</h1>
+            <p class="text-slate small m-0">Immutable records of user authentications, role transitions, booking updates, and administrative security events.</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3 py-2 small">
+                <i class="bi bi-speedometer2 me-1"></i>Command Center
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 rounded-4 p-3 shadow-sm h-100" style="background-color: var(--bg-white);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-slate small fw-semibold">Total Audit Events</span>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #F1F5F9; color: #475569;">
+                        <i class="bi bi-journal-text fs-5"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-charcoal m-0">@Model.TotalCount</div>
+                <div class="text-slate small mt-1">Platform lifecycle records</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 rounded-4 p-3 shadow-sm h-100" style="background-color: var(--bg-white);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-slate small fw-semibold">Today's Activity</span>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--primary-blue-light); color: var(--primary-blue);">
+                        <i class="bi bi-calendar-check fs-5"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-charcoal m-0">@Model.TodayCount</div>
+                <div class="text-slate small mt-1">Logged today (UTC)</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 rounded-4 p-3 shadow-sm h-100" style="background-color: var(--bg-white);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-slate small fw-semibold">Security Events</span>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #FEE2E2; color: #DC2626;">
+                        <i class="bi bi-shield-lock fs-5"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-charcoal m-0">@Model.SecurityCount</div>
+                <div class="text-slate small mt-1">ID verifications & alerts</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 rounded-4 p-3 shadow-sm h-100" style="background-color: var(--bg-white);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-slate small fw-semibold">Role Changes</span>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #EDE9FE; color: #8B5CF6;">
+                        <i class="bi bi-person-gear fs-5"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-charcoal m-0">@Model.RoleChangesCount</div>
+                <div class="text-slate small mt-1">Promotions & approvals</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="card border-0 rounded-4 shadow-sm p-3 mb-4" style="background-color: var(--bg-white);">
+        <form method="get" asp-action="AuditLogs" class="row g-2 align-items-center m-0">
+            <div class="col-12 col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 rounded-start-pill text-slate">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="@Model.CurrentSearch" class="form-control border-start-0 rounded-end-pill" placeholder="Search by user, action, or details..." />
+                </div>
+            </div>
+            <div class="col-8 col-md-4">
+                <select name="activityType" class="form-select rounded-pill">
+                    <option value="">All Activity Types</option>
+                    @foreach (var type in Enum.GetNames<ActivityType>())
+                    {
+                        <option value="@type" selected="@(Model.CurrentActivityType == type)">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-4 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-baby rounded-pill w-100 text-white">
+                    Filter
+                </button>
+                @if (!string.IsNullOrWhiteSpace(Model.CurrentSearch) || !string.IsNullOrWhiteSpace(Model.CurrentActivityType))
+                {
+                    <a asp-action="AuditLogs" class="btn btn-light rounded-pill border">
+                        Reset
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background-color: var(--bg-white);">
+        @if (!Model.Logs.Any())
+        {
+            <div class="text-center py-5">
+                <div class="text-slate mb-2"><i class="bi bi-search fs-1 text-muted"></i></div>
+                <h5 class="fw-bold text-charcoal">No audit records match your filters</h5>
+                <p class="text-slate small m-0">Try clearing your search query or selecting a different activity type.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="text-slate small">
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Category</th>
+                            <th>Event Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.Logs)
+                        {
+                            <tr>
+                                <td class="text-nowrap text-slate small">
+                                    <i class="bi bi-clock me-1"></i>@log.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                                </td>
+                                <td>
+                                    @if (log.User != null)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="user-avatar-bubble" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                                @(string.IsNullOrEmpty(log.User.FirstName) ? "U" : log.User.FirstName.Substring(0, 1))
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-charcoal small">@log.User.FullName</div>
+                                                <div class="text-slate" style="font-size: 0.7rem;">@log.User.Email</div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-slate small">System / Anonymous</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-charcoal small">@log.Action</span>
+                                </td>
+                                <td>
+                                    @switch (log.ActivityType)
+                                    {
+                                        case ActivityType.Login:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #F1F5F9; color: #475569; font-size: 0.75rem;">
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                            </span>
+                                            break;
+                                        case ActivityType.RoleChange:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #EDE9FE; color: #8B5CF6; font-size: 0.75rem;">
+                                                <i class="bi bi-person-gear me-1"></i>Role Change
+                                            </span>
+                                            break;
+                                        case ActivityType.BookingUpdate:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: var(--primary-blue-light); color: var(--primary-blue); font-size: 0.75rem;">
+                                                <i class="bi bi-calendar-check me-1"></i>Booking
+                                            </span>
+                                            break;
+                                        case ActivityType.PropertyCreated:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #DCFCE7; color: #16A34A; font-size: 0.75rem;">
+                                                <i class="bi bi-house-door me-1"></i>Property
+                                            </span>
+                                            break;
+                                        case ActivityType.HostApplication:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: var(--accent-pink-light); color: var(--accent-pink); font-size: 0.75rem;">
+                                                <i class="bi bi-file-earmark-person me-1"></i>Application
+                                            </span>
+                                            break;
+                                        case ActivityType.SecurityEvent:
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #FEE2E2; color: #DC2626; font-size: 0.75rem;">
+                                                <i class="bi bi-shield-lock me-1"></i>Security
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-slate small" style="font-size: 0.85rem;">@log.Details</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                    <span class="text-slate small">Page @Model.CurrentPage of @Model.TotalPages</span>
+                    <div class="d-flex gap-1">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a asp-action="AuditLogs" asp-route-page="@(Model.CurrentPage - 1)" asp-route-search="@Model.CurrentSearch" asp-route-activityType="@Model.CurrentActivityType" class="btn btn-sm btn-light border rounded-pill px-3">
+                                Previous
+                            </a>
+                        }
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a asp-action="AuditLogs" asp-route-page="@(Model.CurrentPage + 1)" asp-route-search="@Model.CurrentSearch" asp-route-activityType="@Model.CurrentActivityType" class="btn btn-sm btn-light border rounded-pill px-3">
+                                Next
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

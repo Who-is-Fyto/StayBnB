@@ -99,7 +99,7 @@
                             <h6 class="fw-bold text-charcoal mb-1">@Model.Property.Title</h6>
                             <div class="small text-slate mb-1">@Model.Property.Address, @Model.Property.City</div>
                             <div class="small text-slate mb-2">@Model.Property.PropertyType &middot; Up to @Model.Property.MaxGuests guests</div>
-                            <div class="fw-bold text-charcoal">$@Model.Property.PricePerNight.ToString("F0") <span class="small text-slate fw-normal">per night</span></div>
+                            <div class="fw-bold text-charcoal"><span class="staybnb-price" data-base-price="@Model.Property.PricePerNight">@CurrencyService.Format(Model.Property.PricePerNight)</span> <span class="small text-slate fw-normal">per night</span></div>
                         </div>
                     </div>
                 </div>

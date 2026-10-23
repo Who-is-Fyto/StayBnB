@@ -110,7 +110,7 @@
                                             <div class="text-slate" style="font-size: 0.75rem;">@app.Property?.PropertyType</div>
                                         </td>
                                         <td class="small text-charcoal">@app.Property?.City</td>
-                                        <td class="small fw-bold text-charcoal">$@app.Property?.PricePerNight.ToString("F0")</td>
+                                        <td class="small fw-bold text-charcoal"><span class="staybnb-price" data-base-price="@(app.Property?.PricePerNight ?? 0)">@CurrencyService.Format(app.Property?.PricePerNight ?? 0)</span></td>
                                         <td class="small text-slate">@app.AppliedAt.ToString("MMM dd, yyyy")</td>
                                         <td class="text-end">
                                             <a asp-action="Review" asp-route-id="@app.Id" class="btn btn-sm btn-primary-baby py-1 px-3">

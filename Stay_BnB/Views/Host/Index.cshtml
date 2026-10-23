@@ -265,7 +265,7 @@
                                         <div class="small text-charcoal">@prop.City</div>
                                     </td>
                                     <td>
-                                        <span class="fw-semibold text-charcoal small">$@prop.PricePerNight.ToString("N0")</span>
+                                        <span class="fw-semibold text-charcoal small staybnb-price" data-base-price="@prop.PricePerNight">@CurrencyService.Format(prop.PricePerNight)</span>
                                         <span class="text-slate" style="font-size: 0.75rem;">/ night</span>
                                     </td>
                                     <td>

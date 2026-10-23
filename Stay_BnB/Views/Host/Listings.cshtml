@@ -105,9 +105,9 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <span class="h5 fw-bold text-charcoal">$@property.PricePerNight.ToString("N0")</span>
+                                    <span class="h5 fw-bold text-charcoal staybnb-price" data-base-price="@property.PricePerNight">@CurrencyService.Format(property.PricePerNight)</span>
                                     <span class="text-slate small">/ night</span>
-                                    <span class="text-slate small ms-2">(+$@property.CleaningFee.ToString("N0") cleaning)</span>
+                                    <span class="text-slate small ms-2">(+<span class="staybnb-price" data-base-price="@property.CleaningFee">@CurrencyService.Format(property.CleaningFee)</span> cleaning)</span>
                                 </div>
                             </div>
 

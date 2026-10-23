@@ -31,9 +31,11 @@
 <!-- Property Cards Grid (70% Image, Charcoal & Slate text, Frosted-glass Pink Heart) -->
 @if (Model != null && Model.Any())
 {
+    var savedPropertyIds = ViewBag.WishlistPropertyIds as List<int> ?? new List<int>();
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         @foreach (var property in Model)
         {
+            var isSaved = savedPropertyIds.Contains(property.Id);
             var coverImage = property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
                 ?? property.Images.FirstOrDefault()?.ImageUrl 
                 ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
@@ -43,7 +45,7 @@
             <div class="col">
                 <div class="property-card position-relative">
                     <!-- Frosted-glass Wishlist Heart Button (Fills with Light Pink #F472B6) -->
-                    <button type="button" class="btn-wishlist-heart" onclick="toggleWishlist(this, @property.Id)" title="Save to favorites">
+                    <button type="button" class="btn-wishlist-heart @(isSaved ? "active" : "")" onclick="toggleWishlist(this, @property.Id)" title="Save to favorites">
                         <i class="bi bi-heart-fill"></i>
                     </button>
 
@@ -65,7 +67,7 @@
                             <div class="property-subtitle text-truncate">@property.PropertyType &middot; Up to @property.MaxGuests guests</div>
                             <div class="property-subtitle text-slate small">Available this month</div>
                             <div class="property-price">
-                                <strong>$@property.PricePerNight.ToString("F0")</strong> <span class="text-slate small">night</span>
+                                <strong><span class="staybnb-price" data-base-price="@property.PricePerNight">@CurrencyService.Format(property.PricePerNight)</span></strong> <span class="text-slate small">night</span>
                             </div>
                         </div>
                     </a>
@@ -89,12 +91,34 @@ else
     <script>
         // Toggle wishlist heart button
         function toggleWishlist(btn, propertyId) {
-            btn.classList.toggle('active');
-            // Animate click scale
-            btn.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                btn.style.transform = '';
-            }, 200);
+            btn.style.transform = 'scale(1.25)';
+            setTimeout(() => { btn.style.transform = ''; }, 200);
+
+            fetch(`/Wishlist/Toggle?propertyId=${propertyId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = '/Account/Login';
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    if (data.saved) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                }
+            })
+            .catch(() => {
+                btn.classList.toggle('active');
+            });
         }
     </script>
 }

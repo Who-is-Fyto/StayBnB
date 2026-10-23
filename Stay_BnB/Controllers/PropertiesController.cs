@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stay_BnB.Data;
 using Stay_BnB.Models;
+using Stay_BnB.Models.Enums;
 using Stay_BnB.ViewModels.Property;
 
 namespace Stay_BnB.Controllers;
@@ -78,6 +80,19 @@ public class PropertiesController : Controller
         var allTypes = await _context.HostProperties.Where(p => p.IsActive).Select(p => p.PropertyType).Distinct().ToListAsync();
         var allAmenities = await _context.Amenities.OrderBy(a => a.Name).ToListAsync();
 
+        // Load wishlist items for authenticated guest
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                ViewBag.WishlistPropertyIds = await _context.WishlistItems
+                    .Where(w => w.UserId == userId)
+                    .Select(w => w.PropertyId)
+                    .ToListAsync();
+            }
+        }
+
         var model = new PropertyFilterViewModel
         {
             Properties = properties,
@@ -112,14 +127,25 @@ public class PropertiesController : Controller
 
         if (property == null) return NotFound();
 
-        // Check if wishlisted by current user
+        // Check if wishlisted or reviewable by current user
         bool isWishlisted = false;
+        bool canReview = false;
+        bool hasReviewed = false;
+
         if (User.Identity?.IsAuthenticated == true)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
                 isWishlisted = await _context.WishlistItems.AnyAsync(w => w.UserId == user.Id && w.PropertyId == property.Id);
+
+                bool hasStay = await _context.Bookings.AnyAsync(b =>
+                    b.PropertyId == property.Id &&
+                    b.GuestId == user.Id &&
+                    (b.Status == BookingStatus.Approved || b.Status == BookingStatus.Completed));
+
+                hasReviewed = await _context.Reviews.AnyAsync(r => r.PropertyId == property.Id && r.ReviewerId == user.Id);
+                canReview = hasStay && !hasReviewed;
             }
         }
 
@@ -132,7 +158,9 @@ public class PropertiesController : Controller
             AverageRating = property.Reviews.Any() ? property.Reviews.Average(r => r.Rating) : 0.0,
             ReviewCount = property.Reviews.Count,
             CheckInProcess = property.CheckInProcess,
-            IsInWishlist = isWishlisted
+            IsInWishlist = isWishlisted,
+            CanUserReview = canReview,
+            HasUserReviewed = hasReviewed
         };
 
         return View(viewModel);

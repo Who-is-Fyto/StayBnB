@@ -87,7 +87,7 @@
                                             @booking.CheckInDate.ToString("MMM dd") - @booking.CheckOutDate.ToString("MMM dd, yyyy")
                                         </div>
                                         <div class="small text-charcoal">
-                                            <strong>$@booking.TotalPrice.ToString("F0")</strong> total &middot; @booking.GuestCount @(booking.GuestCount == 1 ? "guest" : "guests")
+                                            <strong><span class="staybnb-price" data-base-price="@booking.TotalPrice">@CurrencyService.Format(booking.TotalPrice)</span></strong> total &middot; @booking.GuestCount @(booking.GuestCount == 1 ? "guest" : "guests")
                                         </div>
                                     </div>
 

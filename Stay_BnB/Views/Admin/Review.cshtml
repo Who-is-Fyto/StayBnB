@@ -92,7 +92,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="small text-slate fw-semibold">Nightly Rate</div>
-                            <div class="fw-bold text-charcoal fs-5">$@Model.Property.PricePerNight.ToString("F2")</div>
+                            <div class="fw-bold text-charcoal fs-5 staybnb-price" data-base-price="@Model.Property.PricePerNight">@CurrencyService.Format(Model.Property.PricePerNight)</div>
                         </div>
                     </div>
 
@@ -104,11 +104,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="small text-slate fw-semibold">Cleaning Fee</div>
-                            <div class="text-charcoal">$@Model.Property.CleaningFee.ToString("F2")</div>
+                            <div class="text-charcoal staybnb-price" data-base-price="@Model.Property.CleaningFee">@CurrencyService.Format(Model.Property.CleaningFee)</div>
                         </div>
                         <div class="col-md-6">
                             <div class="small text-slate fw-semibold">Service Fee</div>
-                            <div class="text-charcoal">$@Model.Property.ServiceFee.ToString("F2")</div>
+                            <div class="text-charcoal staybnb-price" data-base-price="@Model.Property.ServiceFee">@CurrencyService.Format(Model.Property.ServiceFee)</div>
                         </div>
                     </div>
                 </div>

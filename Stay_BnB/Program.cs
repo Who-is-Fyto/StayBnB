@@ -8,8 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IActivityLogger, ActivityLogger>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
 // Database configuration (supports SQLite and SQL Server)
 var provider = builder.Configuration["DatabaseProvider"] ?? "Sqlite";

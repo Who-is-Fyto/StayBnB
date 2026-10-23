@@ -176,6 +176,47 @@
                 {
                     <p class="text-slate small">Be one of the first travelers to review this accommodation after your stay.</p>
                 }
+                @if (Model.CanUserReview)
+                {
+                    <div class="card border rounded-4 p-4 mt-4" style="background-color: var(--bg-pearl);">
+                        <h6 class="fw-bold text-charcoal mb-2"><i class="bi bi-pencil-square text-primary me-2"></i>Leave a Review for Your Stay</h6>
+                        <p class="text-slate small mb-3">Share your feedback to help other travelers and support your host.</p>
+
+                        <form asp-controller="Reviews" asp-action="Create" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="propertyId" value="@Model.Property.Id" />
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-charcoal">Overall Rating</label>
+                                <select name="rating" class="form-select rounded-3" style="max-width: 200px;">
+                                    <option value="5">5 Stars (Excellent)</option>
+                                    <option value="4">4 Stars (Very Good)</option>
+                                    <option value="3">3 Stars (Average)</option>
+                                    <option value="2">2 Stars (Below Average)</option>
+                                    <option value="1">1 Star (Poor)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-charcoal">Review Comments</label>
+                                <textarea name="comment" rows="3" class="form-control rounded-3" placeholder="Describe the cleanliness, communication, location, and overall experience..." required></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary-baby rounded-pill px-4 text-white">
+                                    Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                }
+                else if (Model.HasUserReviewed)
+                {
+                    <div class="p-3 rounded-4 border mt-3 d-flex align-items-center gap-2" style="background-color: #F0FDF4; border-color: #BBF7D0 !important;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span class="small fw-semibold text-charcoal">You have submitted a review for this property.</span>
+                    </div>
+                }
             </div>
 
             <!-- Minimalist Map View Placeholder (Custom light palette) -->
@@ -203,7 +244,7 @@
             <div class="booking-floating-card">
                 <div class="d-flex justify-content-between align-items-baseline mb-3">
                     <div>
-                        <span class="fs-4 fw-bold text-charcoal">$@Model.Property.PricePerNight.ToString("F0")</span>
+                        <span class="fs-4 fw-bold text-charcoal staybnb-price" data-base-price="@Model.Property.PricePerNight">@CurrencyService.Format(Model.Property.PricePerNight)</span>
                         <span class="text-slate small"> / night</span>
                     </div>
                     <div class="small text-slate">
@@ -253,20 +294,20 @@
                     <!-- Transparent Pricing Calculation Breakdown -->
                     <div id="priceBreakdown" class="d-flex flex-column gap-2 small border-top pt-3">
                         <div class="d-flex justify-content-between text-charcoal">
-                            <span id="nightCalculationLabel">$@Model.Property.PricePerNight.ToString("F0") x 3 nights</span>
-                            <span id="subtotalPrice" class="fw-semibold">$@(Model.Property.PricePerNight * 3)</span>
+                            <span id="nightCalculationLabel">@CurrencyService.Format(Model.Property.PricePerNight) x 3 nights</span>
+                            <span id="subtotalPrice" class="fw-semibold">@CurrencyService.Format(Model.Property.PricePerNight * 3)</span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Cleaning fee</span>
-                            <span class="fw-semibold">$@Model.Property.CleaningFee.ToString("F0")</span>
+                            <span class="fw-semibold staybnb-price" data-base-price="@Model.Property.CleaningFee">@CurrencyService.Format(Model.Property.CleaningFee)</span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Staybnb service fee</span>
-                            <span class="fw-semibold">$@Model.Property.ServiceFee.ToString("F0")</span>
+                            <span class="fw-semibold staybnb-price" data-base-price="@Model.Property.ServiceFee">@CurrencyService.Format(Model.Property.ServiceFee)</span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal border-top pt-2 mt-1 fs-6">
                             <strong>Total before taxes</strong>
-                            <strong id="totalPriceCalculation" class="text-charcoal">$@((Model.Property.PricePerNight * 3) + Model.Property.CleaningFee + Model.Property.ServiceFee)</strong>
+                            <strong id="totalPriceCalculation" class="text-charcoal">@CurrencyService.Format((Model.Property.PricePerNight * 3) + Model.Property.CleaningFee + Model.Property.ServiceFee)</strong>
                         </div>
                     </div>
                 </form>
@@ -317,9 +358,18 @@
                 const subtotal = pricePerNight * nights;
                 const total = subtotal + cleaningFee + serviceFee;
 
-                document.getElementById('nightCalculationLabel').innerText = `$${pricePerNight.toFixed(0)} x ${nights} nights`;
-                document.getElementById('subtotalPrice').innerText = `$${subtotal.toFixed(0)}`;
-                document.getElementById('totalPriceCalculation').innerText = `$${total.toFixed(0)}`;
+                const symbol = window.currentCurrencySymbol || 'R';
+                const rate = window.currentCurrencyRate || 1.0;
+                const code = window.currentCurrencyCode || 'ZAR';
+
+                const fmt = (val) => {
+                    const c = val * rate;
+                    return symbol + (code === 'ZAR' ? (c % 1 === 0 ? Math.round(c).toLocaleString() : c.toFixed(2)) : c.toFixed(2));
+                };
+
+                document.getElementById('nightCalculationLabel').innerText = `${fmt(pricePerNight)} x ${nights} nights`;
+                document.getElementById('subtotalPrice').innerText = fmt(subtotal);
+                document.getElementById('totalPriceCalculation').innerText = fmt(total);
             }
         }
 
@@ -334,13 +384,33 @@
 
         function toggleDetailsWishlist(propertyId) {
             const btn = document.getElementById('detailsWishlistBtn');
-            btn.classList.toggle('btn-accent-pink');
-            btn.classList.toggle('btn-outline-secondary');
-            if (btn.classList.contains('btn-accent-pink')) {
-                btn.innerHTML = '<i class="bi bi-heart-fill"></i> Saved';
-            } else {
-                btn.innerHTML = '<i class="bi bi-heart-fill"></i> Save';
-            }
+            fetch(`/Wishlist/Toggle?propertyId=${propertyId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = '/Account/Login';
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    if (data.saved) {
+                        btn.className = 'btn btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1 btn-accent-pink text-white';
+                        btn.innerHTML = '<i class="bi bi-heart-fill"></i> Saved';
+                    } else {
+                        btn.className = 'btn btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1 btn-outline-secondary';
+                        btn.innerHTML = '<i class="bi bi-heart"></i> Save';
+                    }
+                }
+            })
+            .catch(() => {
+                btn.classList.toggle('btn-accent-pink');
+            });
         }
 
         function copyShareLink() {

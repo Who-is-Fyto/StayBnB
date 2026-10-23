@@ -94,7 +94,7 @@
                             <div class="col-md-4">
                                 <label asp-for="PricePerNight" class="form-label small fw-semibold text-charcoal"></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text currency-symbol">@CurrencyService.CurrentSymbol</span>
                                     <input asp-for="PricePerNight" type="number" step="0.01" class="form-control rounded-end-3" />
                                 </div>
                                 <span asp-validation-for="PricePerNight" class="text-danger small"></span>
@@ -102,7 +102,7 @@
                             <div class="col-md-4">
                                 <label asp-for="CleaningFee" class="form-label small fw-semibold text-charcoal"></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text currency-symbol">@CurrencyService.CurrentSymbol</span>
                                     <input asp-for="CleaningFee" type="number" step="0.01" class="form-control rounded-end-3" />
                                 </div>
                                 <span asp-validation-for="CleaningFee" class="text-danger small"></span>
@@ -110,7 +110,7 @@
                             <div class="col-md-4">
                                 <label asp-for="ServiceFee" class="form-label small fw-semibold text-charcoal"></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text currency-symbol">@CurrencyService.CurrentSymbol</span>
                                     <input asp-for="ServiceFee" type="number" step="0.01" class="form-control rounded-end-3" />
                                 </div>
                                 <span asp-validation-for="ServiceFee" class="text-danger small"></span>

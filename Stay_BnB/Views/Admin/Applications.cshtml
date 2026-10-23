@@ -87,7 +87,7 @@
                                     @app.Property?.PropertyType (Max @app.Property?.MaxGuests)
                                 </td>
                                 <td class="small fw-bold text-charcoal">
-                                    $@app.Property?.PricePerNight.ToString("F0")
+                                    <span class="staybnb-price" data-base-price="@(app.Property?.PricePerNight ?? 0)">@CurrencyService.Format(app.Property?.PricePerNight ?? 0)</span>
                                 </td>
                                 <td class="small text-slate">
                                     @app.AppliedAt.ToString("MMM dd, yyyy")

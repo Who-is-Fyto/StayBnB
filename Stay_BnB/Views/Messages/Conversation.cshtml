@@ -39,7 +39,7 @@
                             }
                             <div class="text-start">
                                 <div class="fw-semibold text-charcoal small text-truncate" style="max-width: 160px;">@Model.Property.Title</div>
-                                <div class="text-slate" style="font-size: 0.7rem;">$@Model.Property.PricePerNight.ToString("N0") / night</div>
+                                <div class="text-slate" style="font-size: 0.7rem;"><span class="staybnb-price" data-base-price="@Model.Property.PricePerNight">@CurrencyService.Format(Model.Property.PricePerNight)</span> / night</div>
                             </div>
                         </a>
                     }

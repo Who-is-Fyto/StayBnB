@@ -124,7 +124,7 @@
                                     <span class="small text-charcoal">@res.GuestCount guest@(res.GuestCount > 1 ? "s" : "")</span>
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-charcoal small">$@res.TotalPrice.ToString("N2")</div>
+                                    <div class="fw-bold text-charcoal small staybnb-price" data-base-price="@res.TotalPrice">@CurrencyService.Format(res.TotalPrice)</div>
                                     <div class="text-slate" style="font-size: 0.75rem;">Payment: @res.Payment?.Status.ToString()</div>
                                 </td>
                                 <td>

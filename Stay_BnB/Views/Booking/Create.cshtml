@@ -101,22 +101,22 @@
                     <h6 class="fw-bold text-charcoal mb-3">Price Details</h6>
                     <div class="d-flex flex-column gap-2 small mb-3">
                         <div class="d-flex justify-content-between text-charcoal">
-                            <span id="priceFormulaLabel">$@Model.PricePerNight.ToString("F0") x @Model.Nights nights</span>
-                            <span id="subtotalDisplay" class="fw-semibold">$@Model.NightlySubtotal.ToString("F2")</span>
+                            <span id="priceFormulaLabel">@CurrencyService.Format(Model.PricePerNight) x @Model.Nights nights</span>
+                            <span id="subtotalDisplay" class="fw-semibold">@CurrencyService.Format(Model.NightlySubtotal)</span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Cleaning fee</span>
-                            <span class="fw-semibold">$@Model.CleaningFee.ToString("F2")</span>
+                            <span class="fw-semibold staybnb-price" data-base-price="@Model.CleaningFee">@CurrencyService.Format(Model.CleaningFee)</span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Staybnb service fee</span>
-                            <span class="fw-semibold">$@Model.ServiceFee.ToString("F2")</span>
+                            <span class="fw-semibold staybnb-price" data-base-price="@Model.ServiceFee">@CurrencyService.Format(Model.ServiceFee)</span>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top border-dark-subtle">
-                        <strong class="text-charcoal fs-5">Total (USD)</strong>
-                        <strong class="text-charcoal fs-5" id="totalPriceDisplay">$@Model.TotalPrice.ToString("F2")</strong>
+                        <strong class="text-charcoal fs-5">Total (<span class="currency-display-code">@CurrencyService.CurrentCode</span>)</strong>
+                        <strong class="text-charcoal fs-5" id="totalPriceDisplay"><span class="staybnb-price" data-base-price="@Model.TotalPrice">@CurrencyService.Format(Model.TotalPrice)</span></strong>
                     </div>
 
                     <div class="mt-3 p-2 bg-pearl rounded-3 border text-center small text-slate">
@@ -149,9 +149,18 @@
                 const subtotal = pricePerNight * nights;
                 const total = subtotal + cleaningFee + serviceFee;
 
-                document.getElementById('priceFormulaLabel').innerText = `$${pricePerNight.toFixed(0)} x ${nights} ${nights === 1 ? 'night' : 'nights'}`;
-                document.getElementById('subtotalDisplay').innerText = `$${subtotal.toFixed(2)}`;
-                document.getElementById('totalPriceDisplay').innerText = `$${total.toFixed(2)}`;
+                const symbol = window.currentCurrencySymbol || 'R';
+                const rate = window.currentCurrencyRate || 1.0;
+                const code = window.currentCurrencyCode || 'ZAR';
+
+                const fmt = (val) => {
+                    const c = val * rate;
+                    return symbol + (code === 'ZAR' ? (c % 1 === 0 ? Math.round(c).toLocaleString() : c.toFixed(2)) : c.toFixed(2));
+                };
+
+                document.getElementById('priceFormulaLabel').innerText = `${fmt(pricePerNight)} x ${nights} ${nights === 1 ? 'night' : 'nights'}`;
+                document.getElementById('subtotalDisplay').innerText = fmt(subtotal);
+                document.getElementById('totalPriceDisplay').innerText = fmt(total);
             }
         }
     </script>

@@ -1,0 +1,103 @@
+@model List<Stay_BnB.Models.WishlistItem>
+@{
+    ViewData["Title"] = "My Wishlist";
+}
+
+<div class="container py-3">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge rounded-pill px-3 py-1" style="background-color: var(--accent-pink-light); color: var(--accent-pink);">
+                    <i class="bi bi-heart-fill me-1"></i>Saved Favorites
+                </span>
+                <span class="text-slate small">@Model.Count saved @(Model.Count == 1 ? "space" : "spaces")</span>
+            </div>
+            <h1 class="h3 fw-bold text-charcoal m-0">My Wishlist</h1>
+            <p class="text-slate small m-0">Explore and plan your upcoming trips with your saved vacation rentals.</p>
+        </div>
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby rounded-pill px-4 py-2 small">
+                <i class="bi bi-search me-1"></i>Discover More Spaces
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Wishlist Properties Grid -->
+    @if (!Model.Any())
+    {
+        <div class="card border-0 rounded-4 p-5 text-center shadow-sm" style="background-color: var(--bg-white);">
+            <div class="mb-3">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: var(--accent-pink-light); color: var(--accent-pink);">
+                    <i class="bi bi-heart fs-1"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold text-charcoal">Your wishlist is empty</h4>
+            <p class="text-slate small mb-4">Tap the heart on any property card while exploring to keep track of spaces you love.</p>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary-baby rounded-pill px-4 py-2">
+                    Start Searching
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in Model)
+            {
+                var property = item.Property;
+                if (property == null) continue;
+
+                var coverImage = property.Images.FirstOrDefault(i => i.IsCover)?.ImageUrl 
+                    ?? property.Images.FirstOrDefault()?.ImageUrl 
+                    ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80";
+
+                var ratingAvg = property.Reviews.Any() ? property.Reviews.Average(r => r.Rating).ToString("0.0") : "New";
+
+                <div class="col">
+                    <div class="property-card position-relative h-100">
+                        <!-- Remove button (heart toggle) -->
+                        <form asp-action="Remove" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="propertyId" value="@property.Id" />
+                            <button type="submit" class="btn-wishlist-heart active" title="Remove from wishlist">
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+                        </form>
+
+                        <!-- Property Card Link -->
+                        <a asp-controller="Properties" asp-action="Details" asp-route-id="@property.Id" class="text-decoration-none text-reset">
+                            <!-- Image Container -->
+                            <div class="property-card-image-wrapper">
+                                <img src="@coverImage" alt="@property.Title" class="property-card-image" loading="lazy" />
+                            </div>
+
+                            <!-- Card Body with Tight Typography -->
+                            <div class="property-card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <span class="property-location text-truncate" style="max-width: 80%;">@property.City, South Africa</span>
+                                    <span class="small fw-semibold text-charcoal">
+                                        <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.75rem;"></i>@ratingAvg
+                                    </span>
+                                </div>
+                                <div class="property-subtitle text-truncate">@property.PropertyType &middot; Up to @property.MaxGuests guests</div>
+                                <div class="property-price mt-2">
+                                    <strong><span class="staybnb-price" data-base-price="@property.PricePerNight">@CurrencyService.Format(property.PricePerNight)</span></strong> <span class="text-slate small">night</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

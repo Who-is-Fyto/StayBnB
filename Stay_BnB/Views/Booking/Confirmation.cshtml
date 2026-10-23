@@ -73,20 +73,20 @@
                     <h6 class="fw-bold text-charcoal mb-2">Price Summary</h6>
                     <div class="d-flex flex-column gap-2 small">
                         <div class="d-flex justify-content-between text-charcoal">
-                            <span>$@Model.Property.PricePerNight.ToString("F0") x @nights nights</span>
-                            <span>$@((Model.Property.PricePerNight * nights).ToString("F2"))</span>
+                            <span>@CurrencyService.Format(Model.Property.PricePerNight) x @nights nights</span>
+                            <span><span class="staybnb-price" data-base-price="@(Model.Property.PricePerNight * nights)">@CurrencyService.Format(Model.Property.PricePerNight * nights)</span></span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Cleaning fee</span>
-                            <span>$@Model.Property.CleaningFee.ToString("F2")</span>
+                            <span><span class="staybnb-price" data-base-price="@Model.Property.CleaningFee">@CurrencyService.Format(Model.Property.CleaningFee)</span></span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal">
                             <span>Staybnb service fee</span>
-                            <span>$@Model.Property.ServiceFee.ToString("F2")</span>
+                            <span><span class="staybnb-price" data-base-price="@Model.Property.ServiceFee">@CurrencyService.Format(Model.Property.ServiceFee)</span></span>
                         </div>
                         <div class="d-flex justify-content-between text-charcoal border-top pt-2 mt-1 fs-6 fw-bold">
                             <span>Total Charged</span>
-                            <span>$@Model.Booking.TotalPrice.ToString("F2")</span>
+                            <span><span class="staybnb-price" data-base-price="@Model.Booking.TotalPrice">@CurrencyService.Format(Model.Booking.TotalPrice)</span></span>
                         </div>
                     </div>
                 </div>

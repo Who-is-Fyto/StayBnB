@@ -241,4 +241,61 @@ public class AdminController : Controller
         TempData["SuccessMessage"] = $"Application #{id} has been rejected with feedback provided to the applicant.";
         return RedirectToAction(nameof(Applications));
     }
+
+    // GET: /Admin/AuditLogs
+    // Searchable security audit log viewer for Admins and SuperAdmins
+    [HttpGet]
+    public async Task<IActionResult> AuditLogs(string? search, string? activityType, int page = 1)
+    {
+        var query = _context.ActivityLogs
+            .Include(a => a.User)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            query = query.Where(a => a.Action.ToLower().Contains(s) ||
+                                     (a.Details != null && a.Details.ToLower().Contains(s)) ||
+                                     (a.User != null && (a.User.FirstName.ToLower().Contains(s) ||
+                                                         a.User.LastName.ToLower().Contains(s) ||
+                                                         (a.User.Email != null && a.User.Email.ToLower().Contains(s)))));
+        }
+
+        if (!string.IsNullOrWhiteSpace(activityType) && Enum.TryParse<ActivityType>(activityType, true, out var type))
+        {
+            query = query.Where(a => a.ActivityType == type);
+        }
+
+        var totalLogs = await query.CountAsync();
+        var today = DateTime.UtcNow.Date;
+        var todayCount = await _context.ActivityLogs.CountAsync(a => a.CreatedAt >= today);
+        var securityCount = await _context.ActivityLogs.CountAsync(a => a.ActivityType == ActivityType.SecurityEvent);
+        var roleChangesCount = await _context.ActivityLogs.CountAsync(a => a.ActivityType == ActivityType.RoleChange);
+
+        int pageSize = 25;
+        int totalPages = (int)Math.Ceiling(totalLogs / (double)pageSize);
+        if (totalPages < 1) totalPages = 1;
+        if (page < 1) page = 1;
+
+        var logs = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var model = new AuditLogViewModel
+        {
+            Logs = logs,
+            CurrentSearch = search,
+            CurrentActivityType = activityType,
+            TotalCount = totalLogs,
+            TodayCount = todayCount,
+            SecurityCount = securityCount,
+            RoleChangesCount = roleChangesCount,
+            CurrentPage = page,
+            TotalPages = totalPages
+        };
+
+        return View(model);
+    }
 }
